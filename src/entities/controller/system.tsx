@@ -39,8 +39,9 @@ export const controllerInputSystem = (world: World, _delta: number) => {
   if (justPressed.has(' ') && morse.phase !== 'responding') {
     const nearest = world.get(NearestItem) as any
     const nearestName = nearest?.mesh?.name ?? ''
-
-    if (nearestName === 'terminal') {
+    if (nearestName === 'keypad-btn') {
+      useKeypad(nearest)
+    } else if (nearestName === 'terminal') {
       startRecording(now)
     } else if (nearestName === 'key') {
       useKey(world, nearest)
@@ -150,6 +151,13 @@ function advanceResponse(now: number) {
   }
 }
 
+function useKeypad(nearest: any) {
+  const id = nearest?.mesh?.userData?.keypadId
+  const digit = nearest?.mesh?.userData?.digit
+  if (!id || !digit) return
+  useGameStore.getState().submitKeypadDigit(id, digit)
+}
+
 function useKey(world: World, nearest: any) {
   nearest.mesh.parent.position.set(-99, -99, -99)
   world.set(NearestItem, { entity: null, mesh: null })
@@ -229,7 +237,7 @@ const computeAndSetNearest = (world: World, camera: any) => {
     const mesh = e.get(Mesh) as any
     if (!mesh) continue
 
-    for (const name of ['terminal', 'key', 'door']) {
+    for (const name of ['terminal', 'key', 'door', 'keypad-btn']) {
       const objs = mesh.getObjectsByProperty?.('name', name)
       for (const obj of objs) {
         if (!obj) continue

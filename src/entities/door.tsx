@@ -8,6 +8,7 @@ import { NearestItem } from './controller/traits'
 import { animated, useSpring } from '@react-spring/three'
 import { useGLTF } from '@react-three/drei'
 import { MeshStandardMaterial } from 'three'
+import Keypad from './keypad'
 
 interface DoorProps {
   position: [number, number, number]
@@ -15,6 +16,7 @@ interface DoorProps {
   thickness?: number
   color?: string
   doorId: string
+  keypad?: { code: string; id: string; rotation: [number, number, number] }
 }
 
 export const Door: React.FC<DoorProps> = ({
@@ -22,6 +24,7 @@ export const Door: React.FC<DoorProps> = ({
   orientation,
   thickness = 0.02,
   doorId,
+  keypad,
 }) => {
   const ref = useRef(null)
   const world = useWorld()
@@ -72,6 +75,16 @@ export const Door: React.FC<DoorProps> = ({
           ref={ref}>
           <boxGeometry args={_args} />
         </mesh>
+
+        {keypad && (
+          <Keypad
+            keypadId={keypad.id}
+            code={keypad.code}
+            doorId={doorId}
+            position={[0.2, 0, -0.05]}
+            rotation={keypad.rotation}
+          />
+        )}
 
         <animated.group position={spring.position as unknown as any}>
           <mesh

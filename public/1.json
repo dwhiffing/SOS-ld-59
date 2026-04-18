@@ -36,6 +36,17 @@
                  "height":16,
                  "id":4,
                  "name":"",
+                 "properties":[
+                        {
+                         "name":"keypadCode",
+                         "type":"int",
+                         "value":1234
+                        }, 
+                        {
+                         "name":"keypadDoor",
+                         "type":"int",
+                         "value":0
+                        }],
                  "rotation":0,
                  "type":"",
                  "visible":true,

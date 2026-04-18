@@ -1,10 +1,17 @@
 import { create } from 'zustand'
 
+export interface KeypadData {
+  code: string
+  input: string
+  doorId?: string
+}
+
 export interface GameState {
   lights: Record<string, boolean>
   keyCount: number
   lockedDoors: Record<string, boolean>
   openDoors: Record<string, boolean>
+  keypads: Record<string, KeypadData>
   scene: 'menu' | 'game'
   setScene: (scene: 'menu' | 'game') => void
   resetGame: () => void
@@ -17,6 +24,9 @@ export interface GameState {
   closeDoor: (doorId: string) => void
   isDoorOpen: (doorId: string) => boolean
   isDoorUnlocked: (doorId: string) => boolean
+  initKeypad: (id: string, code: string, doorId?: string) => void
+  submitKeypadDigit: (id: string, digit: string) => void
+  resetKeypadInput: (id: string) => void
 }
 
 const initialState = {
@@ -26,6 +36,7 @@ const initialState = {
     'start-room-west': true,
   },
   openDoors: {},
+  keypads: {} as Record<string, KeypadData>,
   scene: 'game' as 'menu' | 'game',
 }
 
@@ -44,6 +55,33 @@ export const useGameStore = create<GameState>((set, get) => ({
     set((s) => ({ openDoors: { ...s.openDoors, [doorId]: false } })),
   isDoorOpen: (doorId: string) => !!get().openDoors[doorId],
   isDoorUnlocked: (doorId: string) => !get().lockedDoors[doorId],
+  initKeypad: (id: string, code: string, doorId?: string) => {
+    if (get().keypads[id]) {
+      if (doorId) set((s) => ({ lockedDoors: { ...s.lockedDoors, [doorId]: true } }))
+      return
+    }
+    set((s) => ({
+      keypads: { ...s.keypads, [id]: { code, input: '', doorId } },
+      lockedDoors: doorId ? { ...s.lockedDoors, [doorId]: true } : s.lockedDoors,
+    }))
+  },
+  submitKeypadDigit: (id: string, digit: string) => {
+    const kp = get().keypads[id]
+    const isUnlocked = kp?.doorId ? get().lockedDoors[kp.doorId] === false : false
+    if (!kp || isUnlocked || kp.input.length >= 4) return
+    const newInput = kp.input + digit
+    if (newInput === kp.code) {
+      if (kp.doorId) get().unlockDoor(kp.doorId)
+      set((s) => ({ keypads: { ...s.keypads, [id]: { ...kp, input: newInput } } }))
+    } else {
+      set((s) => ({ keypads: { ...s.keypads, [id]: { ...kp, input: newInput } } }))
+    }
+  },
+  resetKeypadInput: (id: string) => {
+    const kp = get().keypads[id]
+    if (!kp) return
+    set((s) => ({ keypads: { ...s.keypads, [id]: { ...kp, input: '' } } }))
+  },
   setScene: (scene: 'menu' | 'game') => set(() => ({ scene })),
   resetGame: () => set(() => initialState),
   toggleLight: (id: string) => {
@@ -52,7 +90,6 @@ export const useGameStore = create<GameState>((set, get) => ({
       set((s) => ({ lights: { ...s.lights, [id]: false } }))
       return
     }
-
     set((s) => ({ lights: { ...s.lights, [id]: true } }))
   },
 }))

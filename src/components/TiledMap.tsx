@@ -11,6 +11,8 @@ import { Cart } from '../entities/decals/cart'
 import Table from '../entities/decals/table'
 import Chair from '../entities/decals/chair'
 
+type TiledProperty = { name: string; type: string; value: number | string }
+
 type TiledObject = {
   gid: number
   x: number
@@ -19,6 +21,7 @@ type TiledObject = {
   height: number
   name: string
   id: number
+  properties?: TiledProperty[]
 }
 
 type TiledLayer = {
@@ -90,7 +93,11 @@ export function TiledMap({
         if (!doors) return []
         const col = obj.x / tileW
         const row = obj.y / tileW - 1
-        return [{ obj, doors, col, row, key: `tiled-${col}-${row}` }]
+        const getProp = (name: string) =>
+          obj.properties?.find((p) => p.name === name)?.value
+        const keypadCode = getProp('keypadCode')
+        const keypadDoor = getProp('keypadDoor')
+        return [{ obj, doors, col, row, key: `tiled-${col}-${row}`, keypadCode, keypadDoor }]
       }),
     [roomLayer, tileW],
   )
@@ -107,14 +114,19 @@ export function TiledMap({
 
   const rooms: JSX.Element[] = []
 
-  for (const { doors, key } of roomObjects) {
+  for (const { doors, key, keypadCode, keypadDoor } of roomObjects) {
     rooms.push(
         <Room
           key={key}
           scale={[3, 1, 3]}
           position={positions[key]}
           doors={doors as [number?, number?, number?, number?]}
-          roomId={key}>
+          roomId={key}
+          keypads={
+            keypadCode != null && keypadDoor != null
+              ? { [keypadDoor as 0 | 1 | 2 | 3]: { code: String(keypadCode).padStart(4, '0'), id: `${key}-keypad` } }
+              : undefined
+          }>
           <FlickerLight position={[0, 0, 0]} intensity={20.0} defaultOn />
 
           <Terminal position={[0, 0.2, 0]} />
