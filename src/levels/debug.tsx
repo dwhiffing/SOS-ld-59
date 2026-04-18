@@ -2,7 +2,7 @@ import { Physics } from '@react-three/rapier'
 import RapierDebug from '../shared/rapierDebug'
 import { Controller } from '../entities/controller'
 
-import mapData from '../../public/1.json'
+import mapData from './1.json'
 import {
   getSpawnPosition,
   TiledMap,
