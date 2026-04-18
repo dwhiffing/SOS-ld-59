@@ -19,6 +19,12 @@ const DOOR_KEYPAD_ROTATIONS: Record<number, [number, number, number]> = {
   2: [0, -Math.PI / 2, 0],
   3: [0, Math.PI / 2, 0],
 }
+const DOOR_KEYPAD_POSITIONS: Record<number, [number, number, number]> = {
+  0: [-0.2, 0, -0.05],
+  1: [0.2, 0, 0.05],
+  2: [-0.05, 0, 0.2],
+  3: [0.05, 0, 0.2],
+}
 
 export function Room(props: {
   scale: [number, number, number]
@@ -159,7 +165,11 @@ export function Room(props: {
           const makeKeypad = (dir: 0 | 1 | 2 | 3) => {
             const kp = props.keypads?.[dir]
             return kp
-              ? { ...kp, rotation: DOOR_KEYPAD_ROTATIONS[dir] }
+              ? {
+                  ...kp,
+                  position: DOOR_KEYPAD_POSITIONS[dir],
+                  rotation: DOOR_KEYPAD_ROTATIONS[dir],
+                }
               : undefined
           }
 

@@ -15,7 +15,12 @@ interface DoorProps {
   thickness?: number
   color?: string
   doorId: string
-  keypad?: { code: string; id: string; rotation: [number, number, number] }
+  keypad?: {
+    code: string
+    id: string
+    position: [number, number, number]
+    rotation: [number, number, number]
+  }
 }
 
 function makeDoorMap(mode: 'bump' | 'color') {
@@ -98,7 +103,7 @@ export const Door: React.FC<DoorProps> = ({
             keypadId={keypad.id}
             code={keypad.code}
             doorId={doorId}
-            position={[0.2, 0, -0.05]}
+            position={keypad.position}
             rotation={keypad.rotation}
           />
         )}

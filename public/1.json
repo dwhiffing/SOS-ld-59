@@ -20,36 +20,6 @@
                  "y":64
                 }, 
                 {
-                 "gid":5,
-                 "height":16,
-                 "id":3,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":16,
-                 "x":80,
-                 "y":80
-                }, 
-                {
-                 "gid":5,
-                 "height":16,
-                 "id":4,
-                 "name":"",
-                 "properties":[
-                        {
-                         "name":"keypad0Code",
-                         "type":"int",
-                         "value":-1
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":16,
-                 "x":80,
-                 "y":96
-                }, 
-                {
                  "gid":18,
                  "height":16,
                  "id":5,
@@ -92,12 +62,12 @@
                         {
                          "name":"keypad2Code",
                          "type":"int",
-                         "value":-1
+                         "value":2222
                         }, 
                         {
                          "name":"keypad3Code",
                          "type":"int",
-                         "value":-1
+                         "value":3333
                         }],
                  "rotation":0,
                  "type":"",
@@ -105,6 +75,18 @@
                  "width":16,
                  "x":80,
                  "y":80
+                }, 
+                {
+                 "gid":13,
+                 "height":16,
+                 "id":8,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":80,
+                 "y":96
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -113,7 +95,7 @@
          "y":0
         }],
  "nextlayerid":7,
- "nextobjectid":8,
+ "nextobjectid":9,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",

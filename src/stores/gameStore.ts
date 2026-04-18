@@ -16,7 +16,7 @@ export interface GameState {
   resetGame: () => void
   toggleLight: (id: string) => void
   unlockDoor: (doorId: string) => void
-  openDoor: (doorId: string) => void
+  openDoor: (doorId: string, force?: boolean) => void
   closeDoor: (doorId: string) => void
   isDoorOpen: (doorId: string) => boolean
   isDoorUnlocked: (doorId: string) => boolean
@@ -39,8 +39,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   ...initialState,
   unlockDoor: (doorId: string) =>
     set((s) => ({ lockedDoors: { ...s.lockedDoors, [doorId]: false } })),
-  openDoor: (doorId: string) => {
-    if (get().lockedDoors[doorId]) return
+  openDoor: (doorId: string, force = false) => {
+    if (get().lockedDoors[doorId] && !force) return
     set((s) => ({ openDoors: { ...s.openDoors, [doorId]: true } }))
   },
   closeDoor: (doorId: string) =>

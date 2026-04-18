@@ -162,11 +162,7 @@ function useDoor(world: World, nearest: any) {
   const id = nearest?.mesh?.userData?.doorId
   if (!id) return
 
-  const openSingleDoor = (doorId: string) => {
-    useGameStore.getState().openDoor(doorId)
-  }
-
-  openSingleDoor(id)
+  useGameStore.getState().openDoor(id)
 
   const dPos = new Vector3()
   nearest?.mesh.getWorldPosition?.(dPos)
@@ -181,7 +177,7 @@ function useDoor(world: World, nearest: any) {
       return aPos.distanceTo(dPos) - bPos.distanceTo(dPos)
     })[0]
 
-  if (door) openSingleDoor(door.userData.doorId)
+  if (door) useGameStore.getState().openDoor(door.userData.doorId, true)
 }
 
 function moveEntities(world: World) {
