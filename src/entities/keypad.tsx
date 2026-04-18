@@ -30,7 +30,7 @@ const BUTTON_GRID: [number, number][] = [
 const PAD_X = 8
 const PAD_Y = 48
 const BTN_W = (W - PAD_X * 2) / COLS
-const BTN_H = 26
+const BTN_H = 22
 const BTN_GAP = 3
 const DISPLAY_H = 36
 

@@ -68,15 +68,13 @@ export function Room(props: {
         />
 
         {/* Ceiling (hidden in topdown camera mode) */}
-        {/* {cameraMode?.value !== 'topdown' && (
-          <Plane
-            colliderArgs={[halfWidth, halfThick, halfDepth]}
-            meshArgs={[roomWidth, thick, roomDepth]}
-            position={[0, roomHeight + halfThick, 0]}
-            texturePath="floor"
-            textureScale={1}
-          />
-        )} */}
+        <Plane
+          colliderArgs={[halfWidth, halfThick, halfDepth]}
+          meshArgs={[roomWidth, thick, roomDepth]}
+          position={[0, roomHeight + halfThick, 0]}
+          texturePath="floor"
+          textureScale={1}
+        />
 
         {/* Walls with optional centered doorways (controlled by props.doors) */}
         {(() => {

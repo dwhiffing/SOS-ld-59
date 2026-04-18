@@ -1,11 +1,10 @@
 import { useEffect, useRef } from 'react'
-import { useWorld, useTrait } from 'koota/react'
+import { useWorld } from 'koota/react'
 import { useFrame } from '@react-three/fiber'
-import { type Object3D, type PointLight, Vector3 } from 'three'
+import { type Object3D, type PointLight } from 'three'
 import { Mesh } from '../shared/traits'
 import { LightSource } from '../shared/lightTraits'
 import useGameStore from '../stores/gameStore'
-import { useGLTF } from '@react-three/drei'
 import { roomHeight } from './room'
 
 export function FlickerLight({
@@ -32,8 +31,6 @@ export function FlickerLight({
 
   const toggleLight = useGameStore((s) => s.toggleLight)
   const on = useGameStore((s) => s.lights[idRef.current] ?? false)
-  const { nodes, materials } = useGLTF('/light.glb')
-
   useEffect(() => {
     if (defaultOn && !toggleRef.current) toggleLight(idRef.current)
     toggleRef.current = true
@@ -79,7 +76,7 @@ export function FlickerLight({
   })
 
   return (
-    <group ref={ref} position={[position[0], roomHeight - 0.2, position[2]]}>
+    <group ref={ref} position={[position[0], roomHeight - 0.03, position[2]]}>
       <pointLight
         ref={lightRef}
         castShadow
@@ -87,18 +84,15 @@ export function FlickerLight({
         distance={baseDistance}
         intensity={intensity}
         color={color}
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
       />
 
-      {on ? (
-        <mesh
-          // @ts-ignore
-          geometry={nodes.Cylinder__0.geometry}
-          material={materials['Scene_-_Root']}
-          rotation={[-Math.PI / 2, 0, 0]}
-          scale={1}
-          position={[0, 0.19, 0]}
-        />
-      ) : null}
+      {/* Ceiling plate */}
+      <mesh position={[0, 0.02, 0]}>
+        <cylinderGeometry args={[0.11, 0.11, 0.03, 32]} />
+        <meshStandardMaterial color="#2a2a2a" roughness={0.8} />
+      </mesh>
     </group>
   )
 }

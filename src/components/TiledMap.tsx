@@ -157,7 +157,7 @@ export function TiledMap({
 
         <Sign position={[-0.67, 0, -0.54]} />
         <Cart position={[0.6, 0, -0.31]} rotation={[3.14, -0.23, 3.14]} />
-        <Bed position={[-0.65, 0.1, 0.67]} />
+        <Bed position={[-0.65, 0.1, 0.67]} rotation={[0, Math.PI / 2, 0]} />
       </Room>,
     )
   }
