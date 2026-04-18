@@ -50,7 +50,7 @@ export function getSpawnPosition(
   for (let row = 0; row < height; row++) {
     for (let col = 0; col < width; col++) {
       const isSpawn = goalLayer.data[row * width + col] === SPAWN_TILE
-      if (isSpawn) return [col * roomSize, 0.1, -row * roomSize]
+      if (isSpawn) return [col * roomSize + 0.2, 0.1, -row * roomSize]
     }
   }
   return [0, 0.1, 0]
