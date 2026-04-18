@@ -16,6 +16,7 @@ export const morse = {
   lastInputTime: 0,
   ffStart: 0, // time fast-forward began (0 = not fast-forwarding)
   ffBase: 0,  // playhead position when fast-forward began
+  keyHeld: false,
 }
 
 const RESPONSE_PAUSE_MS = 1000

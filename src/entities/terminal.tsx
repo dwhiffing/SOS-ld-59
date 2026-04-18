@@ -1,16 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTrait, useWorld } from 'koota/react'
 import { NearestFilter, type Object3D } from 'three'
-import { CanvasTexture, PlaneGeometry } from 'three'
+import { CanvasTexture } from 'three'
 
 import { Mesh, PhysicsBody } from '../shared/traits'
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
-import { AnimatedOutlines } from '../components/AnimatedOutlines'
 import { NearestItem } from './controller/traits'
-import { useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { morse, decodeMorse } from './morseRecorder'
 import { BITMAP_HEIGHT, BITMAP_WIDTH } from '../constants'
+import { AnimatedTint } from '../components/AnimatedTint'
+
+const TERMINAL_TABLE_HEIGHT = 0.22
 
 const FONT_SIZE = 40
 const MORSE_HIGH_FRAC = 0.42
@@ -22,10 +23,6 @@ const COLOR_SIGNAL = '#00dc00'
 const COLOR_CURSOR = '#003300'
 const COLOR_RESPONSE_SIGNAL = '#dc0000'
 const COLOR_RESPONSE_CURSOR = '#660000'
-
-const SCREEN_OFFSET: [number, number, number] = [0.045, 0.172, 0]
-const SCREEN_SIZE: [number, number] = [0.13, 0.1]
-const SCREEN_CURVE = -0.005
 
 new FontFace('TerminalFont', 'url(/font.ttf)')
   .load()
@@ -87,19 +84,34 @@ function draw(ctx: CanvasRenderingContext2D, w: number, h: number) {
   }
 }
 
-function useCurvedGeometry(width: number, height: number, curve: number) {
-  return useMemo(() => {
-    const geo = new PlaneGeometry(width, height, 16, 8)
-    const pos = geo.attributes.position
-    for (let i = 0; i < pos.count; i++) {
-      const x = pos.getX(i) / (width / 2)
-      const y = pos.getY(i) / (height / 2)
-      pos.setZ(i, -curve * (1 - x * x) * (1 - y * y * 0.3))
-    }
-    pos.needsUpdate = true
-    geo.computeVertexNormals()
-    return geo
-  }, [width, height, curve])
+type V3 = [number, number, number]
+
+function bezelStrips(
+  w: number,
+  h: number,
+  d: number,
+  bezelSize: number,
+  bezelDepth: number,
+) {
+  const x = -(w / 2 + bezelDepth / 2)
+  return [
+    {
+      pos: [x, h / 2 - bezelSize / 2, 0] as V3,
+      args: [bezelDepth, bezelSize, d] as V3,
+    },
+    {
+      pos: [x, -(h / 2 - bezelSize / 2), 0] as V3,
+      args: [bezelDepth, bezelSize, d] as V3,
+    },
+    {
+      pos: [x, 0, -(d / 2 - bezelSize / 2)] as V3,
+      args: [bezelDepth, h - bezelSize * 2, bezelSize] as V3,
+    },
+    {
+      pos: [x, 0, d / 2 - bezelSize / 2] as V3,
+      args: [bezelDepth, h - bezelSize * 2, bezelSize] as V3,
+    },
+  ]
 }
 
 export function Terminal({
@@ -113,16 +125,11 @@ export function Terminal({
   const ref = useRef<Object3D | null>(null)
   const bodyRef = useRef<any>(null)
   const nearest = useTrait(world, NearestItem)
-  const { nodes, materials } = useGLTF('/terminal.glb')
-  const screenGeometry = useCurvedGeometry(
-    SCREEN_SIZE[0],
-    SCREEN_SIZE[1],
-    SCREEN_CURVE,
-  )
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [tex, setTex] = useState<CanvasTexture | null>(null)
   const lastPlayheadRef = useRef(-1)
+  const keyMeshRef = useRef<any>(null)
 
   useEffect(() => {
     const canvas = document.createElement('canvas')
@@ -137,6 +144,11 @@ export function Terminal({
   }, [])
 
   useFrame(() => {
+    if (keyMeshRef.current) {
+      const pressed = nearest?.mesh === ref.current && morse.keyHeld
+      keyMeshRef.current.position.y = pressed ? 0.096 : 0.099
+    }
+
     const canvas = canvasRef.current
     if (!canvas || !tex) return
     const ctx = canvas.getContext('2d')!
@@ -164,45 +176,81 @@ export function Terminal({
       entity.destroy()
     }
   }, [world])
-  const _nodes = nodes as any
+
+  const isNearest = nearest?.mesh === ref.current
 
   return (
     <RigidBody ref={bodyRef} type="fixed" mass={1} colliders={false}>
       <CuboidCollider scale={[0.5, 0.5, 0.5]} args={size} position={position} />
 
-      <group position={position}>
+      <group
+        position={[
+          position[0],
+          position[1] + (TERMINAL_TABLE_HEIGHT - 0.25),
+          position[2],
+        ]}>
         <mesh ref={ref} name="terminal" visible={false}>
           <boxGeometry args={size} />
         </mesh>
+
+        <mesh castShadow receiveShadow position={[0, 0.07, 0]}>
+          <boxGeometry args={[0.15, 0.05, 0.15]} />
+          <meshStandardMaterial color="#111411" roughness={0.9} />
+        </mesh>
+
+        <mesh position={[0, 0.071 - TERMINAL_TABLE_HEIGHT / 2, 0]}>
+          <boxGeometry args={[0.04, TERMINAL_TABLE_HEIGHT, 0.04]} />
+          <meshStandardMaterial color="#111411" roughness={0.9} />
+        </mesh>
+
+        <mesh position={[0, 0.071 - TERMINAL_TABLE_HEIGHT - 0.01, 0]}>
+          <boxGeometry args={[0.1, 0.02, 0.1]} />
+          <meshStandardMaterial color="#111411" roughness={0.9} />
+        </mesh>
+
+        <mesh castShadow receiveShadow position={[0.055, 0.0925, 0]}>
+          <boxGeometry args={[0.03, 0.008, 0.055]} />
+          <meshStandardMaterial
+            color="#111411"
+            roughness={0.7}
+            metalness={0.1}
+          />
+        </mesh>
+
+        <mesh castShadow ref={keyMeshRef} position={[0.055, 0.099, 0]}>
+          <boxGeometry args={[0.015, 0.003, 0.015]} />
+          <meshStandardMaterial
+            color="#441411"
+            roughness={0.7}
+            metalness={0.1}
+          />
+          <AnimatedTint color="#ff0000" opacity={isNearest ? 1 : 0} />
+        </mesh>
+
+        {/* Screen frame — bezelSize: border width, bezelDepth: border protrusion */}
         <group
-          position={[0, -0.2, 0]}
-          rotation={[-Math.PI / 2, 0, Math.PI / 2]}
-          scale={[0.23, 0.23, 0.23]}>
-          <mesh
-            castShadow
-            geometry={_nodes.Object_2.geometry}
-            material={materials.Computer}>
-            <AnimatedOutlines
-              thickness={1}
-              opacity={nearest?.mesh === ref.current ? 1 : 0}
-            />
+          position={[-0.0195, 0.092, 0]}
+          rotation={[0, 0, -Math.PI / 1.51]}>
+          <mesh>
+            <boxGeometry args={[0.05, 0.1, 0.15]} />
+            <meshStandardMaterial color="#111411" roughness={0.9} />
           </mesh>
-          <mesh
-            castShadow
-            geometry={_nodes.Object_7.geometry}
-            material={materials.Stand_LowPoly}>
-            <AnimatedOutlines
-              thickness={1}
-              opacity={nearest?.mesh === ref.current ? 1 : 0}
-            />
-          </mesh>
+          {bezelStrips(0.05, 0.1, 0.15, 0.012, 0.006).map(
+            ({ pos, args }, i) => (
+              <mesh key={i} position={pos}>
+                <boxGeometry args={args} />
+                <meshStandardMaterial color="#111411" roughness={0.9} />
+              </mesh>
+            ),
+          )}
         </group>
 
+        {/* Screen canvas */}
         {tex && (
           <mesh
-            geometry={screenGeometry}
-            position={SCREEN_OFFSET}
-            rotation={[0, Math.PI / 2, 0]}>
+            position={[-0.005, 0.117, 0]}
+            rotation={[Math.PI / 2, Math.PI / 1.19, Math.PI / -2]}>
+            <planeGeometry args={[0.125, 0.075]} />
             <meshBasicMaterial map={tex} />
           </mesh>
         )}

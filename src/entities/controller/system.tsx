@@ -96,6 +96,7 @@ function startRecording(now: number) {
 
 function cancelRecording() {
   morse.phase = 'idle'
+  morse.keyHeld = false
   morse.signal = new Uint8Array(BITMAP_WIDTH)
   morse.playhead = 0
   morse.startTime = 0
@@ -112,6 +113,7 @@ function startResponse(now: number) {
 
 function advanceRecording(now: number) {
   const isHigh = keys.has(' ')
+  morse.keyHeld = isHigh
   if (isHigh) morse.lastInputTime = now
 
   const silent = !morse.ffStart && now - morse.lastInputTime >= AUTO_SUBMIT_MS
