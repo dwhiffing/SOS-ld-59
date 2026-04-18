@@ -16,6 +16,7 @@ const FONT_SIZE = 40
 const MORSE_HIGH_FRAC = 0.42
 const MORSE_LOW_FRAC = 0.58
 const LINE_WIDTH = 3
+const SIGNAL_PAD = 15
 const COLOR_BG = '#000f00'
 const COLOR_SIGNAL = '#00dc00'
 const COLOR_CURSOR = '#003300'
@@ -37,28 +38,36 @@ function draw(ctx: CanvasRenderingContext2D, w: number, h: number) {
   const HIGH_Y = Math.floor(h * MORSE_HIGH_FRAC)
   const LOW_Y = Math.floor(h * MORSE_LOW_FRAC)
   const displayHead = morse.playhead
+  const signalW = w - SIGNAL_PAD * 2
+  const toX = (sx: number) => SIGNAL_PAD + sx * (signalW / BITMAP_WIDTH)
 
   ctx.strokeStyle = COLOR_SIGNAL
   ctx.lineWidth = LINE_WIDTH
   ctx.beginPath()
+  ctx.moveTo(0, LOW_Y + 0.5)
+  ctx.lineTo(SIGNAL_PAD, LOW_Y + 0.5)
   let prevY = (morse.signal[0] === 1 ? HIGH_Y : LOW_Y) + 0.5
-  ctx.moveTo(0, prevY)
+  if (prevY !== LOW_Y + 0.5) ctx.lineTo(SIGNAL_PAD, prevY)
   for (let x = 1; x < displayHead; x++) {
     const y = (morse.signal[x] === 1 ? HIGH_Y : LOW_Y) + 0.5
     if (y !== prevY) {
-      ctx.lineTo(x + 0.5, prevY)
-      ctx.lineTo(x + 0.5, y)
+      ctx.lineTo(toX(x), prevY)
+      ctx.lineTo(toX(x), y)
       prevY = y
     }
   }
-  ctx.lineTo(displayHead + 0.5, prevY)
+  ctx.lineTo(toX(displayHead), prevY)
+  if (morse.phase !== 'recording') {
+    if (prevY !== LOW_Y + 0.5) ctx.lineTo(toX(displayHead), LOW_Y + 0.5)
+    ctx.lineTo(w, LOW_Y + 0.5)
+  }
   ctx.stroke()
 
-  if (morse.phase === 'recording' && displayHead < w) {
+  if (morse.phase === 'recording' && displayHead < BITMAP_WIDTH) {
     ctx.strokeStyle = COLOR_CURSOR
     ctx.beginPath()
-    ctx.moveTo(displayHead + 0.5, 0)
-    ctx.lineTo(displayHead + 0.5, h)
+    ctx.moveTo(toX(displayHead), 0)
+    ctx.lineTo(toX(displayHead), h)
     ctx.stroke()
   }
 
@@ -68,7 +77,7 @@ function draw(ctx: CanvasRenderingContext2D, w: number, h: number) {
   ctx.textBaseline = 'bottom'
   const charY = HIGH_Y - 4
   for (const { char, x0, x1 } of decodeMorse(morse.signal, displayHead)) {
-    ctx.fillText(char, Math.floor((x0 + x1) / 2), charY)
+    ctx.fillText(char, toX((x0 + x1) / 2), charY)
   }
 }
 
@@ -132,6 +141,10 @@ export function Terminal({
         draw(ctx, BITMAP_WIDTH, BITMAP_HEIGHT)
         tex.needsUpdate = true
       }
+    } else if (lastPlayheadRef.current !== -1) {
+      lastPlayheadRef.current = -1
+      draw(ctx, BITMAP_WIDTH, BITMAP_HEIGHT)
+      tex.needsUpdate = true
     }
   })
 

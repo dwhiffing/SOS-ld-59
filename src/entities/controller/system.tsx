@@ -35,6 +35,13 @@ export const controllerInputSystem = (world: World, _delta: number) => {
 
   const entities = world.query(Controllable)
 
+  if (morse.phase === 'recording' && justPressed.has('r')) {
+    morse.phase = 'idle'
+    morse.signal = new Uint8Array(BITMAP_WIDTH)
+    morse.playhead = 0
+    morse.startTime = 0
+  }
+
   if (morse.phase === 'recording') {
     const now = performance.now()
     const elapsed = now - morse.startTime

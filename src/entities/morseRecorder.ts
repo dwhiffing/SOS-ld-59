@@ -79,5 +79,13 @@ export function decodeMorse(signal: Uint8Array, head: number): DecodedLetter[] {
     }
   }
 
+  if (elements.length > 0 && head >= BITMAP_WIDTH) {
+    results.push({
+      char: MORSE_TABLE[elements.join('')] ?? '?',
+      x0: letterX0,
+      x1: head,
+    })
+  }
+
   return results
 }
