@@ -20,6 +20,8 @@ const SIGNAL_PAD = 15
 const COLOR_BG = '#000f00'
 const COLOR_SIGNAL = '#00dc00'
 const COLOR_CURSOR = '#003300'
+const COLOR_RESPONSE_SIGNAL = '#dc0000'
+const COLOR_RESPONSE_CURSOR = '#660000'
 
 const SCREEN_OFFSET: [number, number, number] = [0.045, 0.172, 0]
 const SCREEN_SIZE: [number, number] = [0.13, 0.1]
@@ -41,7 +43,8 @@ function draw(ctx: CanvasRenderingContext2D, w: number, h: number) {
   const signalW = w - SIGNAL_PAD * 2
   const toX = (sx: number) => SIGNAL_PAD + sx * (signalW / BITMAP_WIDTH)
 
-  ctx.strokeStyle = COLOR_SIGNAL
+  const responding = morse.phase === 'responding' || morse.phase === 'responded'
+  ctx.strokeStyle = responding ? COLOR_RESPONSE_SIGNAL : COLOR_SIGNAL
   ctx.lineWidth = LINE_WIDTH
   ctx.beginPath()
   ctx.moveTo(0, LOW_Y + 0.5)
@@ -57,21 +60,24 @@ function draw(ctx: CanvasRenderingContext2D, w: number, h: number) {
     }
   }
   ctx.lineTo(toX(displayHead), prevY)
-  if (morse.phase !== 'recording') {
+  if (morse.phase === 'done') {
     if (prevY !== LOW_Y + 0.5) ctx.lineTo(toX(displayHead), LOW_Y + 0.5)
     ctx.lineTo(w, LOW_Y + 0.5)
   }
   ctx.stroke()
 
-  if (morse.phase === 'recording' && displayHead < BITMAP_WIDTH) {
-    ctx.strokeStyle = COLOR_CURSOR
+  if (
+    (morse.phase === 'recording' || morse.phase === 'responding') &&
+    displayHead < BITMAP_WIDTH
+  ) {
+    ctx.strokeStyle = responding ? COLOR_RESPONSE_CURSOR : COLOR_CURSOR
     ctx.beginPath()
     ctx.moveTo(toX(displayHead), 0)
     ctx.lineTo(toX(displayHead), h)
     ctx.stroke()
   }
 
-  ctx.fillStyle = COLOR_SIGNAL
+  ctx.fillStyle = responding ? COLOR_RESPONSE_SIGNAL : COLOR_SIGNAL
   ctx.font = `${FONT_SIZE}px TerminalFont`
   ctx.textAlign = 'center'
   ctx.textBaseline = 'bottom'

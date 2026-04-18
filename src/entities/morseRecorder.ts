@@ -1,13 +1,94 @@
 import { BITMAP_WIDTH, MORSE_DURATION } from '../constants'
 
-export type MorsePhase = 'idle' | 'recording' | 'done'
+export type MorsePhase =
+  | 'idle'
+  | 'recording'
+  | 'done'
+  | 'responding'
+  | 'responded'
 
 export const morse = {
   phase: 'idle' as MorsePhase,
   startTime: 0,
   signal: new Uint8Array(BITMAP_WIDTH),
   playhead: 0,
+  doneTime: 0,
+  lastInputTime: 0,
 }
+
+const RESPONSE_PAUSE_MS = 1500
+const DOT_MS = 75
+const DASH_MS = 200
+const ELEM_GAP_MS = 100
+const LETTER_GAP_MS = 500
+
+const CHAR_TO_MORSE: Record<string, string> = {
+  A: '.-',
+  B: '-...',
+  C: '-.-.',
+  D: '-..',
+  E: '.',
+  F: '..-.',
+  G: '--.',
+  H: '....',
+  I: '..',
+  J: '.---',
+  K: '-.-',
+  L: '.-..',
+  M: '--',
+  N: '-.',
+  O: '---',
+  P: '.--.',
+  Q: '--.-',
+  R: '.-.',
+  S: '...',
+  T: '-',
+  U: '..-',
+  V: '...-',
+  W: '.--',
+  X: '-..-',
+  Y: '-.--',
+  Z: '--..',
+  '0': '-----',
+  '1': '.----',
+  '2': '..---',
+  '3': '...--',
+  '4': '....-',
+  '5': '.....',
+  '6': '-....',
+  '7': '--...',
+  '8': '---..',
+  '9': '----.',
+}
+
+const RESPONSE_LEAD_PX = 20 // blank pixels before signal starts
+
+export function encodeResponse(text: string): Uint8Array<ArrayBuffer> {
+  const msPerPixel = MORSE_DURATION / BITMAP_WIDTH
+  const signal = new Uint8Array(new ArrayBuffer(BITMAP_WIDTH))
+  let pixel = RESPONSE_LEAD_PX
+
+  const fill = (val: 0 | 1, ms: number) => {
+    const count = Math.round(ms / msPerPixel)
+    for (let i = 0; i < count && pixel < BITMAP_WIDTH; i++)
+      signal[pixel++] = val
+  }
+
+  const chars = text.toUpperCase().split('')
+  for (let ci = 0; ci < chars.length; ci++) {
+    const code = CHAR_TO_MORSE[chars[ci]]
+    if (!code) continue
+    if (ci > 0) fill(0, LETTER_GAP_MS)
+    for (let ei = 0; ei < code.length; ei++) {
+      if (ei > 0) fill(0, ELEM_GAP_MS)
+      fill(1, code[ei] === '-' ? DASH_MS : DOT_MS)
+    }
+  }
+
+  return signal
+}
+
+export { RESPONSE_PAUSE_MS }
 
 // samples; tune relative to tap speed. 400ms at 50ms/sample = 8
 const DOT_DASH_THRESHOLD = Math.round((200 / MORSE_DURATION) * BITMAP_WIDTH)

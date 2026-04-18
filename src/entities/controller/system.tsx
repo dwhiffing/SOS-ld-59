@@ -1,15 +1,16 @@
 import { type World } from 'koota'
-import { Controllable, NearestItem } from './traits'
-import { Mesh, PhysicsBody } from '../../shared/traits'
-import { Vector3, Quaternion, Raycaster } from 'three'
+import { Raycaster, Vector3, Quaternion } from 'three'
 import useGameStore from '../../stores/gameStore'
-import { morse } from '../morseRecorder'
 import { BITMAP_WIDTH, MORSE_DURATION } from '../../constants'
+import { Mesh, PhysicsBody } from '../../shared/traits'
+import { encodeResponse, morse, RESPONSE_PAUSE_MS } from '../morseRecorder'
+import { Controllable, NearestItem } from './traits'
 
 let keys = new Set<string>()
 let justPressed = new Set<string>()
 let initialized = false
 let _lastCamAngle: Quaternion = new Quaternion(0, 0, 0, 0)
+const AUTO_SUBMIT_MS = 2000
 
 function initKeyboardListeners() {
   if (initialized) return
@@ -35,27 +36,46 @@ export const controllerInputSystem = (world: World, _delta: number) => {
 
   const entities = world.query(Controllable)
 
+  const now = performance.now()
+  const playheadAt = (start: number) =>
+    Math.min(
+      Math.floor(((now - start) / MORSE_DURATION) * BITMAP_WIDTH),
+      BITMAP_WIDTH,
+    )
+
   if (morse.phase === 'recording' && justPressed.has('r')) {
     morse.phase = 'idle'
     morse.signal = new Uint8Array(BITMAP_WIDTH)
     morse.playhead = 0
     morse.startTime = 0
-  }
-
-  if (morse.phase === 'recording') {
-    const now = performance.now()
-    const elapsed = now - morse.startTime
-    const newPlayhead = Math.min(
-      Math.floor((elapsed / MORSE_DURATION) * BITMAP_WIDTH),
-      BITMAP_WIDTH,
-    )
+  } else if (morse.phase === 'recording') {
+    const newPlayhead = playheadAt(morse.startTime)
     const isHigh = keys.has(' ')
+    if (isHigh) morse.lastInputTime = now
     for (let x = morse.playhead; x < newPlayhead; x++) {
       morse.signal[x] = isHigh ? 1 : 0
     }
     morse.playhead = newPlayhead
-    if (elapsed >= MORSE_DURATION) {
+    if (
+      now - morse.startTime >= MORSE_DURATION ||
+      now - morse.lastInputTime >= AUTO_SUBMIT_MS
+    ) {
       morse.phase = 'done'
+      morse.playhead = BITMAP_WIDTH
+      morse.doneTime = now
+    }
+  } else if (morse.phase === 'done') {
+    if (now - morse.doneTime >= RESPONSE_PAUSE_MS) {
+      morse.phase = 'responding'
+      morse.signal = encodeResponse('HELLO')
+      morse.playhead = 0
+      morse.startTime = now
+    }
+  } else if (morse.phase === 'responding') {
+    const newPlayhead = playheadAt(morse.startTime)
+    if (newPlayhead !== morse.playhead) morse.playhead = newPlayhead
+    if (now - morse.startTime >= MORSE_DURATION) {
+      morse.phase = 'responded'
       morse.playhead = BITMAP_WIDTH
     }
   }
@@ -84,6 +104,7 @@ export const controllerInputSystem = (world: World, _delta: number) => {
           morse.signal = new Uint8Array(BITMAP_WIDTH)
           morse.playhead = 0
           morse.startTime = now
+          morse.lastInputTime = now
         }
       } else if (nearestName === 'key') {
         nearest.mesh.parent.position.set(-99, -99, -99)
