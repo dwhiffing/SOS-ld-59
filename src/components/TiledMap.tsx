@@ -95,8 +95,12 @@ export function TiledMap({
         const row = obj.y / tileW - 1
         const getProp = (name: string) =>
           obj.properties?.find((p) => p.name === name)?.value
-        const keypadCode = getProp('keypadCode')
-        const keypadDoor = getProp('keypadDoor')
+        const keypads: Record<number, string> = {}
+        for (const dir of [0, 1, 2, 3]) {
+          const code = getProp(`keypad${dir}Code`)
+          if (code != null && code !== -1)
+            keypads[dir] = String(code).padStart(4, '0')
+        }
         return [
           {
             obj,
@@ -104,8 +108,7 @@ export function TiledMap({
             col,
             row,
             key: `tiled-${col}-${row}`,
-            keypadCode,
-            keypadDoor,
+            keypads,
           },
         ]
       }),
@@ -124,7 +127,16 @@ export function TiledMap({
 
   const rooms: JSX.Element[] = []
 
-  for (const { doors, key, keypadCode, keypadDoor } of roomObjects) {
+  for (const { doors, key, keypads } of roomObjects) {
+    const keypadProp =
+      Object.keys(keypads).length > 0
+        ? Object.fromEntries(
+            Object.entries(keypads).map(([dir, code]) => [
+              dir,
+              { code, id: `${key}-keypad-${dir}` },
+            ]),
+          )
+        : undefined
     rooms.push(
       <Room
         key={key}
@@ -132,16 +144,7 @@ export function TiledMap({
         position={positions[key]}
         doors={doors as [number?, number?, number?, number?]}
         roomId={key}
-        keypads={
-          keypadCode != null && keypadDoor != null
-            ? {
-                [keypadDoor as 0 | 1 | 2 | 3]: {
-                  code: String(keypadCode).padStart(4, '0'),
-                  id: `${key}-keypad`,
-                },
-              }
-            : undefined
-        }>
+        keypads={keypadProp as any}>
         <FlickerLight position={[0, 0, 0]} intensity={20.0} defaultOn />
 
         <Terminal position={[0, 0.2, 0]} />

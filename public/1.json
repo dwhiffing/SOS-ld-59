@@ -38,14 +38,9 @@
                  "name":"",
                  "properties":[
                         {
-                         "name":"keypadCode",
+                         "name":"keypad0Code",
                          "type":"int",
-                         "value":1234
-                        }, 
-                        {
-                         "name":"keypadDoor",
-                         "type":"int",
-                         "value":0
+                         "value":-1
                         }],
                  "rotation":0,
                  "type":"",
@@ -77,6 +72,39 @@
                  "width":16,
                  "x":64,
                  "y":64
+                }, 
+                {
+                 "gid":10,
+                 "height":16,
+                 "id":7,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"keypad0Code",
+                         "type":"int",
+                         "value":1111
+                        }, 
+                        {
+                         "name":"keypad1Code",
+                         "type":"int",
+                         "value":-1
+                        }, 
+                        {
+                         "name":"keypad2Code",
+                         "type":"int",
+                         "value":-1
+                        }, 
+                        {
+                         "name":"keypad3Code",
+                         "type":"int",
+                         "value":-1
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":80,
+                 "y":80
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -85,7 +113,7 @@
          "y":0
         }],
  "nextlayerid":7,
- "nextobjectid":7,
+ "nextobjectid":8,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",
