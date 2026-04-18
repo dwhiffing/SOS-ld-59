@@ -1,4 +1,4 @@
-import { JSX, useState } from 'react'
+import { JSX, useMemo, useState } from 'react'
 import FlickerLight from '../entities/flickerLight'
 import { Room } from '../entities/room'
 import { Terminal } from '../entities/terminal'

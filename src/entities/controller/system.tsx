@@ -3,6 +3,8 @@ import { Controllable, NearestItem } from './traits'
 import { Mesh, PhysicsBody } from '../../shared/traits'
 import { Vector3, Quaternion, Raycaster } from 'three'
 import useGameStore from '../../stores/gameStore'
+import { morse } from '../morseRecorder'
+import { BITMAP_WIDTH, MORSE_DURATION } from '../../constants'
 
 let keys = new Set<string>()
 let justPressed = new Set<string>()
@@ -17,7 +19,7 @@ function initKeyboardListeners() {
 
   window.addEventListener('keydown', (e) => {
     keys.add(e.key.toLowerCase())
-    justPressed.add(e.key.toLowerCase())
+    if (!e.repeat) justPressed.add(e.key.toLowerCase())
   })
 
   window.addEventListener('keyup', (e) => {
@@ -32,6 +34,24 @@ export const controllerInputSystem = (world: World, _delta: number) => {
   initKeyboardListeners()
 
   const entities = world.query(Controllable)
+
+  if (morse.phase === 'recording') {
+    const now = performance.now()
+    const elapsed = now - morse.startTime
+    const newPlayhead = Math.min(
+      Math.floor((elapsed / MORSE_DURATION) * BITMAP_WIDTH),
+      BITMAP_WIDTH,
+    )
+    const isHigh = keys.has(' ')
+    for (let x = morse.playhead; x < newPlayhead; x++) {
+      morse.signal[x] = isHigh ? 1 : 0
+    }
+    morse.playhead = newPlayhead
+    if (elapsed >= MORSE_DURATION) {
+      morse.phase = 'done'
+      morse.playhead = BITMAP_WIDTH
+    }
+  }
 
   const forwardKey = keys.has('w') || keys.has('arrowup') ? 1 : 0
   const backKey = keys.has('s') || keys.has('arrowdown') ? 1 : 0
@@ -50,7 +70,15 @@ export const controllerInputSystem = (world: World, _delta: number) => {
 
       const nearestName = nearest?.mesh?.name ?? ''
 
-      if (nearestName === 'key') {
+      if (nearestName === 'terminal') {
+        if (morse.phase !== 'recording') {
+          const now = performance.now()
+          morse.phase = 'recording'
+          morse.signal = new Uint8Array(BITMAP_WIDTH)
+          morse.playhead = 0
+          morse.startTime = now
+        }
+      } else if (nearestName === 'key') {
         nearest.mesh.parent.position.set(-99, -99, -99)
         world.set(NearestItem, { entity: null, mesh: null })
         gs.addKey()

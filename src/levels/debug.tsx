@@ -7,7 +7,6 @@ import { getSpawnPosition, TiledMap } from '../components/TiledMap'
 
 export function DebugLevel() {
   const spawnPos = getSpawnPosition(mapData)
-  console.log(spawnPos)
   return (
     <>
       <Physics gravity={[0, -9.81, 0]}>
