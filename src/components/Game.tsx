@@ -32,17 +32,5 @@ export function Game() {
 export default Game
 
 function Hud() {
-  const keyCount = useGameStore((s) => s.keyCount)
-
-  return (
-    <div className="ui">
-      <span
-        style={{
-          marginLeft: 12,
-          color: 'gold',
-        }}>
-        Keys: {keyCount}
-      </span>
-    </div>
-  )
+  return <div className="ui"></div>
 }

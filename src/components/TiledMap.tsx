@@ -97,7 +97,17 @@ export function TiledMap({
           obj.properties?.find((p) => p.name === name)?.value
         const keypadCode = getProp('keypadCode')
         const keypadDoor = getProp('keypadDoor')
-        return [{ obj, doors, col, row, key: `tiled-${col}-${row}`, keypadCode, keypadDoor }]
+        return [
+          {
+            obj,
+            doors,
+            col,
+            row,
+            key: `tiled-${col}-${row}`,
+            keypadCode,
+            keypadDoor,
+          },
+        ]
       }),
     [roomLayer, tileW],
   )
@@ -116,35 +126,40 @@ export function TiledMap({
 
   for (const { doors, key, keypadCode, keypadDoor } of roomObjects) {
     rooms.push(
-        <Room
-          key={key}
-          scale={[3, 1, 3]}
-          position={positions[key]}
-          doors={doors as [number?, number?, number?, number?]}
-          roomId={key}
-          keypads={
-            keypadCode != null && keypadDoor != null
-              ? { [keypadDoor as 0 | 1 | 2 | 3]: { code: String(keypadCode).padStart(4, '0'), id: `${key}-keypad` } }
-              : undefined
-          }>
-          <FlickerLight position={[0, 0, 0]} intensity={20.0} defaultOn />
+      <Room
+        key={key}
+        scale={[3, 1, 3]}
+        position={positions[key]}
+        doors={doors as [number?, number?, number?, number?]}
+        roomId={key}
+        keypads={
+          keypadCode != null && keypadDoor != null
+            ? {
+                [keypadDoor as 0 | 1 | 2 | 3]: {
+                  code: String(keypadCode).padStart(4, '0'),
+                  id: `${key}-keypad`,
+                },
+              }
+            : undefined
+        }>
+        <FlickerLight position={[0, 0, 0]} intensity={20.0} defaultOn />
 
-          <Terminal position={[0, 0.2, 0]} />
-          <Table position={[-0.79, 0, -0.81]} />
-          <Chair position={[-0.79, 0, -1.01]} />
+        <Terminal position={[0, 0.2, 0]} />
+        <Table position={[-0.79, 0, -0.81]} />
+        <Chair position={[-0.79, 0, -1.01]} />
 
-          <Shelf position={[1.04, 0.3, 1.16]} />
-          <Crates position={[1.08, 0, -1.07]} />
-          <Barrel position={[-1.25, 0, 1.24]} />
-          <Barrel position={[-1.0, 0, 1.22]} />
-          <Barrel position={[-1.16, 0, 0.98]} />
-          <Barrel position={[0.65, 0, -1.21]} />
+        <Shelf position={[1.04, 0.3, 1.16]} />
+        <Crates position={[1.08, 0, -1.07]} />
+        <Barrel position={[-1.25, 0, 1.24]} />
+        <Barrel position={[-1.0, 0, 1.22]} />
+        <Barrel position={[-1.16, 0, 0.98]} />
+        <Barrel position={[0.65, 0, -1.21]} />
 
-          <Sign position={[-0.67, 0, -0.54]} />
-          <Cart position={[0.6, 0, -0.31]} rotation={[3.14, -0.23, 3.14]} />
-          <Bed position={[-0.65, 0.1, 0.67]} />
-        </Room>,
-      )
+        <Sign position={[-0.67, 0, -0.54]} />
+        <Cart position={[0.6, 0, -0.31]} rotation={[3.14, -0.23, 3.14]} />
+        <Bed position={[-0.65, 0.1, 0.67]} />
+      </Room>,
+    )
   }
 
   return <>{rooms}</>

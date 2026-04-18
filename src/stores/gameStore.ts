@@ -8,17 +8,13 @@ export interface KeypadData {
 
 export interface GameState {
   lights: Record<string, boolean>
-  keyCount: number
   lockedDoors: Record<string, boolean>
   openDoors: Record<string, boolean>
   keypads: Record<string, KeypadData>
   scene: 'menu' | 'game'
   setScene: (scene: 'menu' | 'game') => void
   resetGame: () => void
-
   toggleLight: (id: string) => void
-  addKey: () => void
-  removeKey: () => void
   unlockDoor: (doorId: string) => void
   openDoor: (doorId: string) => void
   closeDoor: (doorId: string) => void
@@ -31,7 +27,6 @@ export interface GameState {
 
 const initialState = {
   lights: {},
-  keyCount: 0,
   lockedDoors: {
     'start-room-west': true,
   },
@@ -42,9 +37,6 @@ const initialState = {
 
 export const useGameStore = create<GameState>((set, get) => ({
   ...initialState,
-
-  addKey: () => set((s) => ({ keyCount: s.keyCount + 1 })),
-  removeKey: () => set((s) => ({ keyCount: Math.max(0, s.keyCount - 1) })),
   unlockDoor: (doorId: string) =>
     set((s) => ({ lockedDoors: { ...s.lockedDoors, [doorId]: false } })),
   openDoor: (doorId: string) => {
@@ -57,24 +49,33 @@ export const useGameStore = create<GameState>((set, get) => ({
   isDoorUnlocked: (doorId: string) => !get().lockedDoors[doorId],
   initKeypad: (id: string, code: string, doorId?: string) => {
     if (get().keypads[id]) {
-      if (doorId) set((s) => ({ lockedDoors: { ...s.lockedDoors, [doorId]: true } }))
+      if (doorId)
+        set((s) => ({ lockedDoors: { ...s.lockedDoors, [doorId]: true } }))
       return
     }
     set((s) => ({
       keypads: { ...s.keypads, [id]: { code, input: '', doorId } },
-      lockedDoors: doorId ? { ...s.lockedDoors, [doorId]: true } : s.lockedDoors,
+      lockedDoors: doorId
+        ? { ...s.lockedDoors, [doorId]: true }
+        : s.lockedDoors,
     }))
   },
   submitKeypadDigit: (id: string, digit: string) => {
     const kp = get().keypads[id]
-    const isUnlocked = kp?.doorId ? get().lockedDoors[kp.doorId] === false : false
+    const isUnlocked = kp?.doorId
+      ? get().lockedDoors[kp.doorId] === false
+      : false
     if (!kp || isUnlocked || kp.input.length >= 4) return
     const newInput = kp.input + digit
     if (newInput === kp.code) {
       if (kp.doorId) get().unlockDoor(kp.doorId)
-      set((s) => ({ keypads: { ...s.keypads, [id]: { ...kp, input: newInput } } }))
+      set((s) => ({
+        keypads: { ...s.keypads, [id]: { ...kp, input: newInput } },
+      }))
     } else {
-      set((s) => ({ keypads: { ...s.keypads, [id]: { ...kp, input: newInput } } }))
+      set((s) => ({
+        keypads: { ...s.keypads, [id]: { ...kp, input: newInput } },
+      }))
     }
   },
   resetKeypadInput: (id: string) => {

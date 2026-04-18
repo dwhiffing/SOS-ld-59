@@ -43,8 +43,6 @@ export const controllerInputSystem = (world: World, _delta: number) => {
       useKeypad(nearest)
     } else if (nearestName === 'terminal') {
       startRecording(now)
-    } else if (nearestName === 'key') {
-      useKey(world, nearest)
     } else if (nearestName === 'door') {
       useDoor(world, nearest)
     }
@@ -158,22 +156,11 @@ function useKeypad(nearest: any) {
   useGameStore.getState().submitKeypadDigit(id, digit)
 }
 
-function useKey(world: World, nearest: any) {
-  nearest.mesh.parent.position.set(-99, -99, -99)
-  world.set(NearestItem, { entity: null, mesh: null })
-  useGameStore.getState().addKey()
-}
-
 function useDoor(world: World, nearest: any) {
   const id = nearest?.mesh?.userData?.doorId
   if (!id) return
 
-  const gs = useGameStore.getState()
   const openSingleDoor = (doorId: string) => {
-    if (gs.keyCount > 0) {
-      gs.unlockDoor(doorId)
-      gs.removeKey()
-    }
     useGameStore.getState().openDoor(doorId)
   }
 
