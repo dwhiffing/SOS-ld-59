@@ -1,0 +1,29 @@
+{
+  "name": "lightcrumbs2",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@react-spring/three": "^10.0.3",
+    "@react-three/drei": "^10.0.6",
+    "@react-three/fiber": "^9.1.2",
+    "@react-three/rapier": "^2.1.0",
+    "@types/node": "^22.15.17",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@types/three": "^0.175.0",
+    "@vitejs/plugin-react": "^4.4.1",
+    "koota": "^0.4.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "three": "^0.175.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.0.7",
+    "zustand": "^5.0.8"
+  },
+  "packageManager": "pnpm@9.15.0+sha1.8bfdb6d72b4d5fdf87d21d27f2bfbe2b21dd2629"
+}

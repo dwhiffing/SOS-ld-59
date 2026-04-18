@@ -1,0 +1,56 @@
+body {
+  background-color: black;
+  color: white;
+  font-family: sans-serif;
+  padding: 0;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.game,
+.menu {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+.ui {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 10;
+  color: white;
+  pointer-events: none;
+}
+
+/* full-screen fade overlay used when switching scenes */
+.scene-fade {
+  position: fixed;
+  inset: 0;
+  background: black;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: opacity ease-in-out;
+}
+.scene-fade.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.app-root {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.crosshair {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  inset: 0;
+}
