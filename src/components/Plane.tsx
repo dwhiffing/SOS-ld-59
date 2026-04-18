@@ -2,11 +2,30 @@ import { CuboidCollider } from '@react-three/rapier'
 import { getBoxGeometry, TextureMaterial } from './TextureMaterial'
 import { doorH, doorW, roomHeight } from '../entities/room'
 
+function PlaneMaterial({
+  texturePath,
+  color,
+}: {
+  texturePath?: string
+  color?: string
+}) {
+  if (color != null && texturePath == null) {
+    return <meshBasicMaterial color={color} />
+  }
+  return (
+    <TextureMaterial
+      path={texturePath!}
+      color={texturePath === 'wall' ? '#444' : color}
+    />
+  )
+}
+
 export function Plane({
   colliderArgs,
   meshArgs,
   position,
   texturePath,
+  color,
   textureScale = 2,
   isDoor = false,
   doorWidth = doorW,
@@ -16,7 +35,8 @@ export function Plane({
   colliderArgs: [number, number, number]
   meshArgs: [number, number, number]
   position: [number, number, number]
-  texturePath: string
+  texturePath?: string
+  color?: string
   textureScale?: number
   isDoor?: boolean
   doorWidth?: number
@@ -37,10 +57,7 @@ export function Plane({
               textureScale,
             )}
           />
-          <TextureMaterial
-            path={texturePath}
-            color={texturePath === 'wall' ? '#444' : undefined}
-          />
+          <PlaneMaterial texturePath={texturePath} color={color} />
         </mesh>
       </>
     )
@@ -77,15 +94,11 @@ export function Plane({
               position[0] - width / 2 + sideHalf,
               position[1],
               position[2],
-            ]}
-          >
+            ]}>
             <primitive
               object={getBoxGeometry(sideWidth, height, depth, textureScale)}
             />
-            <TextureMaterial
-              path={texturePath}
-              color={texturePath === 'wall' ? '#444' : undefined}
-            />
+            <PlaneMaterial texturePath={texturePath} color={color} />
           </mesh>
         </group>,
       )
@@ -110,15 +123,11 @@ export function Plane({
               position[0] + width / 2 - sideHalf,
               position[1],
               position[2],
-            ]}
-          >
+            ]}>
             <primitive
               object={getBoxGeometry(sideWidth, height, depth, textureScale)}
             />
-            <TextureMaterial
-              path={texturePath}
-              color={texturePath === 'wall' ? '#444' : undefined}
-            />
+            <PlaneMaterial texturePath={texturePath} color={color} />
           </mesh>
         </group>,
       )
@@ -131,15 +140,11 @@ export function Plane({
           <mesh
             castShadow
             receiveShadow
-            position={[position[0], position[1] + doorHeight / 2, position[2]]}
-          >
+            position={[position[0], position[1] + doorHeight / 2, position[2]]}>
             <primitive
               object={getBoxGeometry(doorWidth, topHeight, depth, textureScale)}
             />
-            <TextureMaterial
-              path={texturePath}
-              color={texturePath === 'wall' ? '#444' : undefined}
-            />
+            <PlaneMaterial texturePath={texturePath} color={color} />
           </mesh>
         </group>,
       )
@@ -168,15 +173,11 @@ export function Plane({
               position[0],
               position[1],
               position[2] - depth / 2 + sideHalf,
-            ]}
-          >
+            ]}>
             <primitive
               object={getBoxGeometry(width, height, sideDepth, textureScale)}
             />
-            <TextureMaterial
-              path={texturePath}
-              color={texturePath === 'wall' ? '#444' : undefined}
-            />
+            <PlaneMaterial texturePath={texturePath} color={color} />
           </mesh>
         </group>,
       )
@@ -197,15 +198,11 @@ export function Plane({
               position[0],
               position[1],
               position[2] + depth / 2 - sideHalf,
-            ]}
-          >
+            ]}>
             <primitive
               object={getBoxGeometry(width, height, sideDepth, textureScale)}
             />
-            <TextureMaterial
-              path={texturePath}
-              color={texturePath === 'wall' ? '#444' : undefined}
-            />
+            <PlaneMaterial texturePath={texturePath} color={color} />
           </mesh>
         </group>,
       )
@@ -217,15 +214,11 @@ export function Plane({
           <mesh
             castShadow
             receiveShadow
-            position={[position[0], position[1] + doorHeight / 2, position[2]]}
-          >
+            position={[position[0], position[1] + doorHeight / 2, position[2]]}>
             <primitive
               object={getBoxGeometry(width, topHeight, doorWidth, textureScale)}
             />
-            <TextureMaterial
-              path={texturePath}
-              color={texturePath === 'wall' ? '#444' : undefined}
-            />
+            <PlaneMaterial texturePath={texturePath} color={color} />
           </mesh>
         </group>,
       )
