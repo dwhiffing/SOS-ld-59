@@ -60,7 +60,7 @@ function draw(ctx: CanvasRenderingContext2D, w: number, h: number) {
     }
   }
   ctx.lineTo(toX(displayHead), prevY)
-  if (morse.phase === 'done') {
+  if (morse.phase === 'done' || (responding && displayHead >= BITMAP_WIDTH)) {
     if (prevY !== LOW_Y + 0.5) ctx.lineTo(toX(displayHead), LOW_Y + 0.5)
     ctx.lineTo(w, LOW_Y + 0.5)
   }

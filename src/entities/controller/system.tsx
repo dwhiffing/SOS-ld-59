@@ -3,14 +3,15 @@ import { Quaternion, Raycaster, Vector3 } from 'three'
 import { BITMAP_WIDTH, MORSE_DURATION } from '../../constants'
 import { Mesh, PhysicsBody } from '../../shared/traits'
 import useGameStore from '../../stores/gameStore'
-import { encodeResponse, morse, RESPONSE_PAUSE_MS } from '../morseRecorder'
+import { HELLO_SIGNAL, morse, RESPONSE_PAUSE_MS } from '../morseRecorder'
 import { Controllable, NearestItem } from './traits'
 
 let keys = new Set<string>()
 let justPressed = new Set<string>()
 let initialized = false
 let _lastCamAngle: Quaternion = new Quaternion(0, 0, 0, 0)
-const AUTO_SUBMIT_MS = 2000
+const AUTO_SUBMIT_MS = 1500
+const FF_SPEED = 10
 
 function initKeyboardListeners() {
   if (initialized) return
@@ -35,7 +36,7 @@ export const controllerInputSystem = (world: World, _delta: number) => {
 
   updateMorseState(now)
 
-  if (justPressed.has(' ')) {
+  if (justPressed.has(' ') && morse.phase !== 'responding') {
     const nearest = world.get(NearestItem) as any
     const nearestName = nearest?.mesh?.name ?? ''
 
@@ -57,24 +58,30 @@ export default controllerInputSystem
 
 // --- Morse state machine ---
 
-function playheadAt(start: number, now: number) {
+function playheadAt(start: number, now: number, speed = 1) {
   return Math.min(
-    Math.floor(((now - start) / MORSE_DURATION) * BITMAP_WIDTH),
+    Math.floor(((speed * (now - start)) / MORSE_DURATION) * BITMAP_WIDTH),
     BITMAP_WIDTH,
   )
 }
 
 function updateMorseState(now: number) {
-  if (morse.phase === 'recording' && justPressed.has('r')) {
-    cancelRecording()
-  } else if (morse.phase === 'recording') {
-    advanceRecording(now)
+  if (morse.phase === 'recording') {
+    if (justPressed.has('r')) {
+      cancelRecording()
+    } else {
+      advanceRecording(now)
+    }
   } else if (morse.phase === 'done') {
     if (now - morse.doneTime >= RESPONSE_PAUSE_MS) {
       startResponse(now)
     }
   } else if (morse.phase === 'responding') {
-    advanceResponse(now)
+    if (justPressed.has('r')) {
+      cancelRecording()
+    } else {
+      advanceResponse(now)
+    }
   }
 }
 
@@ -85,6 +92,7 @@ function startRecording(now: number) {
   morse.playhead = 0
   morse.startTime = now
   morse.lastInputTime = now
+  morse.ffStart = 0
 }
 
 function cancelRecording() {
@@ -92,38 +100,53 @@ function cancelRecording() {
   morse.signal = new Uint8Array(BITMAP_WIDTH)
   morse.playhead = 0
   morse.startTime = 0
+  morse.ffStart = 0
 }
 
 function startResponse(now: number) {
   morse.phase = 'responding'
-  morse.signal = encodeResponse('HELLO')
+  morse.signal = HELLO_SIGNAL
   morse.playhead = 0
   morse.startTime = now
+  morse.ffStart = 0
 }
 
 function advanceRecording(now: number) {
-  const newPlayhead = playheadAt(morse.startTime, now)
   const isHigh = keys.has(' ')
   if (isHigh) morse.lastInputTime = now
+
+  const silent = !morse.ffStart && now - morse.lastInputTime >= AUTO_SUBMIT_MS
+  if (silent) {
+    morse.ffStart = now
+    morse.ffBase = morse.playhead
+  }
+
+  const newPlayhead = morse.ffStart
+    ? Math.min(
+        morse.ffBase +
+          Math.floor(
+            FF_SPEED * ((now - morse.ffStart) / MORSE_DURATION) * BITMAP_WIDTH,
+          ),
+        BITMAP_WIDTH,
+      )
+    : playheadAt(morse.startTime, now)
+
   for (let x = morse.playhead; x < newPlayhead; x++) {
     morse.signal[x] = isHigh ? 1 : 0
   }
   morse.playhead = newPlayhead
-  const timedOut = now - morse.startTime >= MORSE_DURATION
-  const silent = now - morse.lastInputTime >= AUTO_SUBMIT_MS
-  if (timedOut || silent) {
+  if (newPlayhead >= BITMAP_WIDTH) {
     morse.phase = 'done'
-    morse.playhead = BITMAP_WIDTH
     morse.doneTime = now
   }
 }
 
 function advanceResponse(now: number) {
-  const newPlayhead = playheadAt(morse.startTime, now)
+  const newPlayhead = playheadAt(morse.startTime, now, 2)
+
   if (newPlayhead !== morse.playhead) morse.playhead = newPlayhead
-  if (now - morse.startTime >= MORSE_DURATION) {
+  if (newPlayhead >= BITMAP_WIDTH) {
     morse.phase = 'responded'
-    morse.playhead = BITMAP_WIDTH
   }
 }
 

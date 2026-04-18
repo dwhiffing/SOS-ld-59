@@ -14,9 +14,11 @@ export const morse = {
   playhead: 0,
   doneTime: 0,
   lastInputTime: 0,
+  ffStart: 0, // time fast-forward began (0 = not fast-forwarding)
+  ffBase: 0,  // playhead position when fast-forward began
 }
 
-const RESPONSE_PAUSE_MS = 1500
+const RESPONSE_PAUSE_MS = 1000
 const DOT_MS = 75
 const DASH_MS = 200
 const ELEM_GAP_MS = 100
@@ -88,6 +90,7 @@ export function encodeResponse(text: string): Uint8Array<ArrayBuffer> {
   return signal
 }
 
+export const HELLO_SIGNAL = encodeResponse('HELLO')
 export { RESPONSE_PAUSE_MS }
 
 // samples; tune relative to tap speed. 400ms at 50ms/sample = 8
