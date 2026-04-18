@@ -3,10 +3,14 @@ import RapierDebug from '../shared/rapierDebug'
 import { Controller } from '../entities/controller'
 
 import mapData from '../../public/1.json'
-import { getSpawnPosition, TiledMap } from '../components/TiledMap'
+import {
+  getSpawnPosition,
+  TiledMap,
+  TiledMapData,
+} from '../components/TiledMap'
 
 export function DebugLevel() {
-  const spawnPos = getSpawnPosition(mapData)
+  const spawnPos = getSpawnPosition(mapData as TiledMapData)
   return (
     <>
       <Physics gravity={[0, -9.81, 0]}>
@@ -14,9 +18,9 @@ export function DebugLevel() {
 
         <Controller position={spawnPos} />
 
-        <TiledMap map={mapData} roomSize={3} />
+        <TiledMap map={mapData as TiledMapData} roomSize={3} />
       </Physics>
-      <ambientLight intensity={10} />
+      <ambientLight intensity={1} />
     </>
   )
 }

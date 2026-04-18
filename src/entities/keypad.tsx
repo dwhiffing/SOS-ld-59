@@ -3,7 +3,6 @@ import { useFrame } from '@react-three/fiber'
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import { useTraitEffect, useWorld } from 'koota/react'
 import { CanvasTexture, NearestFilter, type Object3D } from 'three'
-import { AnimatedOutlines } from '../components/AnimatedOutlines'
 import { Mesh } from '../shared/traits'
 import { useGameStore } from '../stores/gameStore'
 import { NearestItem } from './controller/traits'
@@ -136,7 +135,9 @@ export function Keypad({
   const initKeypad = useGameStore((s) => s.initKeypad)
   const resetKeypadInput = useGameStore((s) => s.resetKeypadInput)
   const keypad = useGameStore((s) => s.keypads[keypadId])
-  const isUnlocked = useGameStore((s) => doorId ? s.lockedDoors[doorId] === false : false)
+  const isUnlocked = useGameStore((s) =>
+    doorId ? s.lockedDoors[doorId] === false : false,
+  )
 
   useEffect(() => {
     initKeypad(keypadId, code, doorId)

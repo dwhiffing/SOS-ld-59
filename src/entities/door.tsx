@@ -1,14 +1,13 @@
-import { useRef, useEffect, useState } from 'react'
-import { CuboidCollider, RigidBody } from '@react-three/rapier'
-import { doorH, doorW } from './room'
-import { useGameStore } from '../stores/gameStore'
-import { AnimatedOutlines } from '../components/AnimatedOutlines'
-import { useTraitEffect, useWorld } from 'koota/react'
-import { NearestItem } from './controller/traits'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { animated, useSpring } from '@react-spring/three'
-import { useGLTF } from '@react-three/drei'
-import { MeshStandardMaterial } from 'three'
+import { CuboidCollider, RigidBody } from '@react-three/rapier'
+import { useTraitEffect, useWorld } from 'koota/react'
+import { CanvasTexture, SRGBColorSpace } from 'three'
+import { useGameStore } from '../stores/gameStore'
+import { NearestItem } from './controller/traits'
 import Keypad from './keypad'
+import { doorH, doorW } from './room'
+import { AnimatedTint } from '../components/AnimatedTint'
 
 interface DoorProps {
   position: [number, number, number]
@@ -17,6 +16,29 @@ interface DoorProps {
   color?: string
   doorId: string
   keypad?: { code: string; id: string; rotation: [number, number, number] }
+}
+
+function makeDoorMap(mode: 'bump' | 'color') {
+  const w = 128
+  const h = 256
+  const canvas = document.createElement('canvas')
+  canvas.width = w
+  canvas.height = h
+  const ctx = canvas.getContext('2d')!
+
+  const px = w * 0.15
+  const py = h * 0.075
+  const pw = w * 0.7
+  const ph = h * 0.8
+
+  ctx.fillStyle = '#fff'
+  ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#000'
+  ctx.fillRect(px, py, pw, ph)
+
+  const tex = new CanvasTexture(canvas)
+  if (mode === 'color') tex.colorSpace = SRGBColorSpace
+  return tex
 }
 
 export const Door: React.FC<DoorProps> = ({
@@ -35,7 +57,6 @@ export const Door: React.FC<DoorProps> = ({
 
   const isOpen = useGameStore((s) => s.isDoorOpen(doorId ?? ''))
   const isLocked = useGameStore((s) => s.lockedDoors[doorId ?? ''])
-  const { nodes, materials } = useGLTF('/door.glb')
 
   const args: [number, number, number] =
     orientation === 'horizontal'
@@ -43,9 +64,9 @@ export const Door: React.FC<DoorProps> = ({
       : [thickness, doorH, doorW]
 
   const _args: [number, number, number] = [
-    args[0] * 0.95,
-    args[1] * 0.95,
-    args[2] * 0.95,
+    args[0] * 1.0,
+    args[1] * 1.0,
+    args[2] * 1.0,
   ]
 
   const spring = useSpring({
@@ -58,11 +79,7 @@ export const Door: React.FC<DoorProps> = ({
     setTimeout(() => useGameStore.getState().closeDoor(doorId), 3000)
   }, [isOpen, doorId])
 
-  const original = materials['02_-_Default']
-  const mat = original.clone() as MeshStandardMaterial
-  mat.color.multiplyScalar(0.15)
-  mat.metalness = 0
-  mat.roughness = 1
+  const bumpMap = useMemo(() => makeDoorMap('bump'), [])
 
   return (
     <RigidBody type="fixed" colliders={false}>
@@ -87,32 +104,18 @@ export const Door: React.FC<DoorProps> = ({
         )}
 
         <animated.group position={spring.position as unknown as any}>
-          <mesh
-            // castShadow
-            // receiveShadow
-            // @ts-ignore
-            geometry={nodes['Line001_02_-_Default_0'].geometry}
-            material={mat}
-            position={[0, -0.14, 0]}
-            scale={[0.004, 0.004, 0.004]}
-            rotation={(() => {
-              const id = doorId ?? ''
-              let y = 0
-              if (id.includes('east')) {
-                y = orientation === 'vertical' ? -Math.PI / 2 : 0
-              } else if (id.includes('west')) {
-                y = orientation === 'vertical' ? Math.PI / 2 : 0
-              } else if (id.includes('south')) {
-                y = 0
-              } else {
-                y = Math.PI
-              }
-
-              return [0, y, 0]
-            })()}>
-            <AnimatedOutlines
+          <mesh castShadow>
+            <boxGeometry args={_args} />
+            <meshStandardMaterial
+              color="#555"
+              bumpMap={bumpMap}
+              bumpScale={5}
+              roughness={0.9}
+              metalness={0.9}
+            />
+            <AnimatedTint
               color={isLocked ? 'red' : 'white'}
-              opacity={isOutlined ? 1 : 0}
+              opacity={isOutlined ? 0.02 : 0}
             />
           </mesh>
         </animated.group>
