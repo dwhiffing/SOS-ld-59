@@ -131,7 +131,7 @@ const computeAndSetNearest = (world: World, camera: any) => {
   const raycaster = getRaycaster(camera)
   const maxDist = Math.sqrt(0.5)
 
-  const names = ['map', 'key', 'door']
+  const names = ['terminal', 'key', 'door']
 
   for (const e of world.entities) {
     const mesh = e.get(Mesh) as any

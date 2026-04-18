@@ -1,7 +1,7 @@
 import { JSX, useState } from 'react'
 import FlickerLight from '../entities/flickerLight'
 import { Room } from '../entities/room'
-import { Map as MapEntity } from '../entities/map'
+import { Terminal } from '../entities/terminal'
 import Shelf from '../entities/decals/shelf'
 import Bed from '../entities/decals/bed'
 import Crates from '../entities/decals/crates'
@@ -111,7 +111,7 @@ export function TiledMap({
           roomId={key}>
           <FlickerLight position={[0, 0, 0]} intensity={20.0} defaultOn />
 
-          <MapEntity position={[0, 0.2, 0]} />
+          <Terminal position={[0, 0.2, 0]} />
           <Table position={[-0.79, 0, -0.81]} />
           <Chair position={[-0.79, 0, -1.01]} />
 
