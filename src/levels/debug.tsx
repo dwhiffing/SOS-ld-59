@@ -18,7 +18,7 @@ export function DebugLevel() {
 
         <Controller position={spawnPos} />
 
-        <TiledMap map={mapData as TiledMapData} roomSize={3} />
+        <TiledMap map={mapData as TiledMapData} />
       </Physics>
       <ambientLight intensity={1} />
     </>

@@ -50,6 +50,11 @@
                  "name":"",
                  "properties":[
                         {
+                         "name":"hasTerminal",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
                          "name":"keypad0Code",
                          "type":"int",
                          "value":1111

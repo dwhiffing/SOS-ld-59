@@ -202,7 +202,8 @@ function moveEntities(world: World) {
     if (move.lengthSq() > 0) move.normalize()
 
     const phys = entity.get(PhysicsBody)?.api as any
-    phys.current.setLinvel({ x: move.x, y: 0, z: move.z }, true)
+    const speed = 1.1
+    phys.current.setLinvel({ x: move.x * speed, y: 0, z: move.z * speed }, true)
 
     const dot = Math.abs(_lastCamAngle.dot(quat))
     const angle = Math.acos(Math.max(-1, Math.min(1, dot)))

@@ -56,7 +56,7 @@ const TILE_DOORS: Record<number, number[]> = {
 
 export function getSpawnPosition(
   map: TiledMapData,
-  roomSize = 3,
+  roomSize = 2,
 ): [number, number, number] {
   const roomLayer = map.layers.find((l) => l.name === 'Room Layer')
   const startObj = roomLayer?.objects?.find((o) => o.name === 'start')
@@ -77,7 +77,7 @@ export type TiledMapData = {
 
 export function TiledMap({
   map,
-  roomSize = 3,
+  roomSize = 2,
 }: {
   map: TiledMapData
   roomSize?: number
@@ -109,6 +109,7 @@ export function TiledMap({
             row,
             key: `tiled-${col}-${row}`,
             keypads,
+            hasTerminal: !!getProp('hasTerminal'),
           },
         ]
       }),
@@ -127,7 +128,7 @@ export function TiledMap({
 
   const rooms: JSX.Element[] = []
 
-  for (const { doors, key, keypads } of roomObjects) {
+  for (const { doors, key, keypads, hasTerminal } of roomObjects) {
     const keypadProp =
       Object.keys(keypads).length > 0
         ? Object.fromEntries(
@@ -140,14 +141,14 @@ export function TiledMap({
     rooms.push(
       <Room
         key={key}
-        scale={[3, 1, 3]}
+        scale={[roomSize, 1, roomSize]}
         position={positions[key]}
         doors={doors as [number?, number?, number?, number?]}
         roomId={key}
         keypads={keypadProp as any}>
         <FlickerLight position={[0, 0, 0]} intensity={20.0} defaultOn />
 
-        <Terminal position={[0, 0.2, 0]} />
+        {hasTerminal && <Terminal position={[0, 0.2, 0]} />}
         <Table position={[-0.79, 0, -0.81]} />
         <Chair position={[-0.79, 0, -1.01]} />
 
