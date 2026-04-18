@@ -1,15 +1,5 @@
 import { JSX, useMemo, useState } from 'react'
-import FlickerLight from '../entities/flickerLight'
-import { Room } from '../entities/room'
-import { Terminal } from '../entities/terminal'
-import Shelf from '../entities/decals/shelf'
-import Bed from '../entities/decals/bed'
-import Crates from '../entities/decals/crates'
-import { Barrel } from '../entities/decals/barrel'
-import { Sign } from '../entities/decals/sign'
-import { Cart } from '../entities/decals/cart'
-import Table from '../entities/decals/table'
-import Chair from '../entities/decals/chair'
+import { Room1 } from './Room1'
 
 type TiledProperty = { name: string; type: string; value: number | string }
 
@@ -139,30 +129,14 @@ export function TiledMap({
           )
         : undefined
     rooms.push(
-      <Room
+      <Room1
         key={key}
-        scale={[roomSize, 1, roomSize]}
         position={positions[key]}
         doors={doors as [number?, number?, number?, number?]}
         roomId={key}
-        keypads={keypadProp as any}>
-        <FlickerLight position={[0, 0, 0]} intensity={20.0} defaultOn />
-
-        {hasTerminal && <Terminal position={[0, 0.2, 0]} />}
-        <Table position={[-0.79, 0, -0.81]} />
-        <Chair position={[-0.79, 0, -1.01]} />
-
-        <Shelf position={[1.04, 0.3, 1.16]} />
-        <Crates position={[1.08, 0, -1.07]} />
-        <Barrel position={[-1.25, 0, 1.24]} />
-        <Barrel position={[-1.0, 0, 1.22]} />
-        <Barrel position={[-1.16, 0, 0.98]} />
-        <Barrel position={[0.65, 0, -1.21]} />
-
-        <Sign position={[-0.67, 0, -0.54]} />
-        <Cart position={[0.6, 0, -0.31]} rotation={[3.14, -0.23, 3.14]} />
-        <Bed position={[-0.65, 0.1, 0.67]} rotation={[0, Math.PI / 2, 0]} />
-      </Room>,
+        keypadProp={keypadProp as any}
+        hasTerminal={hasTerminal}
+      />,
     )
   }
 

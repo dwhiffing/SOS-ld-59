@@ -14,7 +14,6 @@ export function Controller({
   const world = useWorld()
   const bodyRef = useRef<any>(null)
   const perspCamRef = useRef<any>(null)
-  const coneRef = useRef<any>(null)
   const ref = useRef<Object3D>(null)
   const [x, y, z] = position
 

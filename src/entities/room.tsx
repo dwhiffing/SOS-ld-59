@@ -27,12 +27,13 @@ const DOOR_KEYPAD_POSITIONS: Record<number, [number, number, number]> = {
 }
 
 export function Room(props: {
-  scale: [number, number, number]
+  scale?: [number, number, number]
   doors?: [number?, number?, number?, number?]
   position?: [number, number, number]
   roomId?: string
   children?: React.ReactNode
   keypads?: Partial<Record<0 | 1 | 2 | 3, KeypadInfo>>
+  hideCeiling?: boolean
 }) {
   const world = useWorld()
   const ref = useRef<Object3D>(null)
@@ -49,7 +50,7 @@ export function Room(props: {
     }
   }, [world])
 
-  const [roomWidth, _, roomDepth] = props.scale
+  const [roomWidth, _, roomDepth] = props.scale ?? [2, 1, 2]
   const thick = 0.1
   const halfWidth = roomWidth / 2
   const halfDepth = roomDepth / 2
@@ -74,13 +75,15 @@ export function Room(props: {
         />
 
         {/* Ceiling (hidden in topdown camera mode) */}
-        <Plane
-          colliderArgs={[halfWidth, halfThick, halfDepth]}
-          meshArgs={[roomWidth, thick, roomDepth]}
-          position={[0, roomHeight + halfThick, 0]}
-          texturePath="floor"
-          textureScale={1}
-        />
+        {!props.hideCeiling && (
+          <Plane
+            colliderArgs={[halfWidth, halfThick, halfDepth]}
+            meshArgs={[roomWidth, thick, roomDepth]}
+            position={[0, roomHeight + halfThick, 0]}
+            texturePath="floor"
+            textureScale={1}
+          />
+        )}
 
         {/* Walls with optional centered doorways (controlled by props.doors) */}
         {(() => {

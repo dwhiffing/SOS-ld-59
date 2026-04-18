@@ -11,7 +11,7 @@ import { morse, decodeMorse } from './morseRecorder'
 import { BITMAP_HEIGHT, BITMAP_WIDTH } from '../constants'
 import { AnimatedTint } from '../components/AnimatedTint'
 
-const TERMINAL_TABLE_HEIGHT = 0.22
+const TERMINAL_TABLE_HEIGHT = 0.2
 
 const FONT_SIZE = 40
 const MORSE_HIGH_FRAC = 0.42
@@ -186,7 +186,7 @@ export function Terminal({
       <group
         position={[
           position[0],
-          position[1] + (TERMINAL_TABLE_HEIGHT - 0.25),
+          position[1] + (TERMINAL_TABLE_HEIGHT - 0.025),
           position[2],
         ]}>
         <mesh ref={ref} name="terminal" visible={false}>
