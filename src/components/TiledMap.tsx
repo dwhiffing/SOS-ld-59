@@ -11,14 +11,26 @@ import { Cart } from '../entities/decals/cart'
 import Table from '../entities/decals/table'
 import Chair from '../entities/decals/chair'
 
-type TiledLayer = {
-  name: string
-  data: number[]
+type TiledObject = {
+  gid: number
+  x: number
+  y: number
   width: number
   height: number
+  name: string
+  id: number
 }
 
-const SPAWN_TILE = 2
+type TiledLayer = {
+  name: string
+  type: 'tilelayer' | 'objectgroup'
+  // tile layer fields
+  data?: number[]
+  width?: number
+  height?: number
+  // object layer fields
+  objects?: TiledObject[]
+}
 
 // Maps Room Layer tile ID → door directions (0=north, 1=south, 2=east, 3=west)
 const TILE_DOORS: Record<number, number[]> = {
@@ -43,22 +55,20 @@ export function getSpawnPosition(
   map: TiledMapData,
   roomSize = 3,
 ): [number, number, number] {
-  const goalLayer = map.layers.find((l) => l.name === 'Goal Layer')
-  if (!goalLayer) return [0, 0.1, 0]
-
-  const { width, height } = goalLayer
-  for (let row = 0; row < height; row++) {
-    for (let col = 0; col < width; col++) {
-      const isSpawn = goalLayer.data[row * width + col] === SPAWN_TILE
-      if (isSpawn) return [col * roomSize + 0.2, 0.1, -row * roomSize]
-    }
-  }
-  return [0, 0.1, 0]
+  const roomLayer = map.layers.find((l) => l.name === 'Room Layer')
+  const startObj = roomLayer?.objects?.find((o) => o.name === 'start')
+  if (!startObj) return [0, 0.1, 0]
+  const tileW = map.tilewidth ?? 16
+  const col = startObj.x / tileW
+  const row = startObj.y / tileW - 1
+  return [col * roomSize + 0.2, 0.1, -row * roomSize]
 }
 
 export type TiledMapData = {
   width: number
   height: number
+  tilewidth: number
+  tileheight: number
   layers: TiledLayer[]
 }
 
@@ -71,38 +81,34 @@ export function TiledMap({
 }) {
   const roomLayer = map.layers.find((l) => l.name === 'Room Layer')
 
+  const tileW = map.tilewidth
+
+  const roomObjects = useMemo(
+    () =>
+      (roomLayer?.objects ?? []).flatMap((obj) => {
+        const doors = TILE_DOORS[obj.gid]
+        if (!doors) return []
+        const col = obj.x / tileW
+        const row = obj.y / tileW - 1
+        return [{ obj, doors, col, row, key: `tiled-${col}-${row}` }]
+      }),
+    [roomLayer, tileW],
+  )
+
   const [positions] = useState<Record<string, [number, number, number]>>(() => {
-    if (!roomLayer) return {}
-    const { data, width, height } = roomLayer
     const init: Record<string, [number, number, number]> = {}
-    for (let row = 0; row < height; row++) {
-      for (let col = 0; col < width; col++) {
-        if (TILE_DOORS[data[row * width + col]])
-          init[`tiled-${col}-${row}`] = [
-            (col * roomSize) / 2,
-            0,
-            (-row * roomSize) / 2,
-          ]
-      }
+    for (const { col, row, key } of roomObjects) {
+      init[key] = [(col * roomSize) / 2, 0, (-row * roomSize) / 2]
     }
     return init
   })
 
   if (!roomLayer) return null
 
-  const { data, width, height } = roomLayer
-
   const rooms: JSX.Element[] = []
 
-  for (let row = 0; row < height; row++) {
-    for (let col = 0; col < width; col++) {
-      const tileId = data[row * width + col]
-      const doors = TILE_DOORS[tileId]
-      if (!doors) continue
-
-      const key = `tiled-${col}-${row}`
-
-      rooms.push(
+  for (const { doors, key } of roomObjects) {
+    rooms.push(
         <Room
           key={key}
           scale={[3, 1, 3]}
@@ -127,7 +133,6 @@ export function TiledMap({
           <Bed position={[-0.65, 0.1, 0.67]} />
         </Room>,
       )
-    }
   }
 
   return <>{rooms}</>
