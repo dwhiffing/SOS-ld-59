@@ -35,7 +35,9 @@ const SOUND_MODES: SoundMode[] = ['all', 'muteMusic', 'muteAll']
 
 function loadSoundMode(): SoundMode {
   const stored = localStorage.getItem(SOUND_MODE_KEY)
-  return (SOUND_MODES.includes(stored as SoundMode) ? stored : 'all') as SoundMode
+  return (
+    SOUND_MODES.includes(stored as SoundMode) ? stored : 'all'
+  ) as SoundMode
 }
 
 export const initialState = {
@@ -102,7 +104,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
   cycleSoundMode: () => {
     const current = get().soundMode
-    const next = SOUND_MODES[(SOUND_MODES.indexOf(current) + 1) % SOUND_MODES.length]
+    const next =
+      SOUND_MODES[(SOUND_MODES.indexOf(current) + 1) % SOUND_MODES.length]
     localStorage.setItem(SOUND_MODE_KEY, next)
     set({ soundMode: next })
   },

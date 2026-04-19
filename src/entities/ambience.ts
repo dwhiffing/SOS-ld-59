@@ -4,6 +4,9 @@ const master = ctx.createGain()
 master.gain.value = 0
 master.connect(ctx.destination)
 
+let musicMuted = false
+let targetGain = 0 // the gain we want when unmuted
+
 // Reverb via convolution with noise impulse
 function makeReverb(duration = 3, decay = 2): ConvolverNode {
   const rate = ctx.sampleRate
@@ -176,23 +179,27 @@ export function startAmbience() {
   startDrone()
   startWind()
   scheduleCycle()
-  master.gain.setValueAtTime(0, ctx.currentTime)
-  master.gain.linearRampToValueAtTime(1, ctx.currentTime + 8)
+  targetGain = 1
+  if (!musicMuted) {
+    master.gain.setValueAtTime(0, ctx.currentTime)
+    master.gain.linearRampToValueAtTime(1, ctx.currentTime + 8)
+  }
 }
 
 export function setMusicMuted(muted: boolean) {
+  musicMuted = muted
+  master.gain.cancelScheduledValues(ctx.currentTime)
   if (muted) {
-    master.gain.cancelScheduledValues(ctx.currentTime)
     master.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5)
   } else {
-    master.gain.cancelScheduledValues(ctx.currentTime)
-    master.gain.linearRampToValueAtTime(1, ctx.currentTime + 0.5)
+    master.gain.linearRampToValueAtTime(targetGain, ctx.currentTime + 0.5)
   }
 }
 
 export function stopAmbience() {
   if (!running) return
   running = false
+  targetGain = 0
   master.gain.linearRampToValueAtTime(0, ctx.currentTime + 6)
 }
 
@@ -238,12 +245,13 @@ export function startMenuHowl() {
 
   const gain = ctx.createGain()
   gain.gain.setValueAtTime(0, ctx.currentTime)
-  gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 8)
+  if (!musicMuted) gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 8)
+  targetGain = 0.18
 
   source.connect(f1)
   f1.connect(f2)
   f2.connect(gain)
-  gain.connect(ctx.destination)
+  gain.connect(master)
   source.start()
 
   menuHowlNodes = { source, gain }
@@ -253,6 +261,7 @@ export function stopMenuHowl() {
   if (!menuHowlNodes) return
   const { gain, source } = menuHowlNodes
   menuHowlNodes = null
+  targetGain = 0
   const stop = ctx.currentTime + 6
   gain.gain.linearRampToValueAtTime(0, stop)
   setTimeout(() => source.stop(), 6100)
