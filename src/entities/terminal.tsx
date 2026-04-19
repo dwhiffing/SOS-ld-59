@@ -157,7 +157,8 @@ export function Terminal({
     if (!canvas || !tex) return
     const ctx = canvas.getContext('2d')!
 
-    if (morse.phase !== 'idle') {
+    const isActive = morse.terminalRoomId === roomId
+    if (isActive && morse.phase !== 'idle') {
       if (morse.playhead !== lastPlayheadRef.current) {
         lastPlayheadRef.current = morse.playhead
         draw(ctx, BITMAP_WIDTH, BITMAP_HEIGHT)

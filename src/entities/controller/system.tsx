@@ -107,11 +107,15 @@ export const controllerInputSystem = (world: World, _delta: number) => {
     const nearestName = nearest?.mesh?.name ?? ''
     if (nearestName === 'keypad-btn') {
       useKeypad(nearest)
-    } else if (nearestName === 'terminal' && morse.phase === 'idle') {
-      morse.terminalRoomId = nearest.mesh.userData.roomId ?? ''
-      morse.terminalRoomName =
-        nearest.mesh.userData.roomName ?? nearest.mesh.userData.roomId ?? ''
-      startRecording(now)
+    } else if (nearestName === 'terminal') {
+      const newRoomId = nearest.mesh.userData.roomId ?? ''
+      const isDifferent = newRoomId !== morse.terminalRoomId
+      if (morse.phase === 'idle' || (isDifferent && morse.phase !== 'recording')) {
+        morse.terminalRoomId = newRoomId
+        morse.terminalRoomName =
+          nearest.mesh.userData.roomName ?? newRoomId
+        startRecording(now)
+      }
     } else if (nearestName === 'door') {
       useDoor(world, nearest)
     }
