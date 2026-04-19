@@ -27,7 +27,6 @@ export function BaseRoom({
   hideCeiling,
   exitDoor,
   lockedDoors,
-  graffiti,
 }: RoomProps) {
   return (
     <Room

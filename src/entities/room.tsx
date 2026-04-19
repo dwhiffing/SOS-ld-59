@@ -5,7 +5,6 @@ import { Mesh, PhysicsBody } from '../shared/traits'
 import { RigidBody } from '@react-three/rapier'
 import Door from './door'
 import { Plane } from '../components/Plane'
-import { Graffiti } from './Graffiti'
 
 export const doorW = 0.3
 export const doorH = 0.57
@@ -37,7 +36,6 @@ export function Room(props: {
   hideCeiling?: boolean
   exitDoor?: number
   lockedDoors?: Partial<Record<0 | 1 | 2 | 3, boolean>>
-  graffiti?: Partial<Record<0 | 1 | 2 | 3, string>>
 }) {
   const world = useWorld()
   const ref = useRef<Object3D>(null)
@@ -231,15 +229,6 @@ export function Room(props: {
 
           return parts
         })()}
-
-        {props.graffiti && (
-          <Graffiti
-            texts={props.graffiti}
-            halfWidth={halfWidth}
-            halfDepth={halfDepth}
-            thick={thick}
-          />
-        )}
 
         {props.children}
       </group>

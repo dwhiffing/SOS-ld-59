@@ -98,11 +98,7 @@ export function TiledMap({
           const val = getProp(`door${dir}Locked`)
           if (val != null && val !== 0) lockedDoors[dir] = true
         }
-        const graffiti: Partial<Record<0 | 1 | 2 | 3, string>> = {}
-        for (const dir of [0, 1, 2, 3] as const) {
-          const val = getProp(`graffiti${dir}`)
-          if (val != null && val !== '') graffiti[dir] = String(val)
-        }
+
         return [
           {
             obj,
@@ -115,7 +111,6 @@ export function TiledMap({
             variant: variantValue != null ? Number(variantValue) : 0,
             exitDoor: exitDoorValue != null ? Number(exitDoorValue) : undefined,
             lockedDoors,
-            graffiti,
           },
         ]
       }),
@@ -134,7 +129,15 @@ export function TiledMap({
 
   const rooms: JSX.Element[] = []
 
-  for (const { doors, key, keypads, hasTerminal, variant, exitDoor, lockedDoors, graffiti } of roomObjects) {
+  for (const {
+    doors,
+    key,
+    keypads,
+    hasTerminal,
+    variant,
+    exitDoor,
+    lockedDoors,
+  } of roomObjects) {
     const keypadProp =
       Object.keys(keypads).length > 0
         ? Object.fromEntries(
@@ -155,7 +158,6 @@ export function TiledMap({
         variant={variant}
         exitDoor={exitDoor}
         lockedDoors={lockedDoors}
-        graffiti={Object.keys(graffiti).length > 0 ? graffiti : undefined}
       />,
     )
   }

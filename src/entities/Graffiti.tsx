@@ -1,38 +1,5 @@
 import { useMemo } from 'react'
 import { CanvasTexture, NearestFilter, SRGBColorSpace } from 'three'
-import { roomHeight } from './room'
-
-interface GraffitiProps {
-  texts: Partial<Record<0 | 1 | 2 | 3, string>>
-  halfWidth: number
-  halfDepth: number
-  thick: number
-}
-
-const WALL_CONFIGS: Record<
-  number,
-  {
-    pos: (hw: number, hd: number, t: number) => [number, number, number]
-    rot: [number, number, number]
-  }
-> = {
-  0: {
-    pos: (_hw, hd, t) => [0, roomHeight * 0.45, hd - t - 0.001],
-    rot: [0, Math.PI, 0],
-  },
-  1: {
-    pos: (_hw, hd, t) => [0, roomHeight * 0.45, -hd + t + 0.001],
-    rot: [0, 0, 0],
-  },
-  2: {
-    pos: (hw, _hd, t) => [hw - t - 0.001, roomHeight * 0.45, 0],
-    rot: [0, -Math.PI / 2, 0],
-  },
-  3: {
-    pos: (hw, _hd, t) => [-hw + t + 0.001, roomHeight * 0.45, 0],
-    rot: [0, Math.PI / 2, 0],
-  },
-}
 
 function seededRand(seed: number) {
   let s = seed
@@ -115,30 +82,23 @@ function makeGraffitiTexture(text: string): CanvasTexture {
 }
 
 export function Graffiti({
-  texts,
-  halfWidth,
-  halfDepth,
-  thick,
-}: GraffitiProps) {
-  const entries = Object.entries(texts) as [string, string][]
-
+  text,
+  position,
+  rotation,
+  scale,
+}: {
+  text: string
+  position: [number, number, number]
+  rotation: [number, number, number]
+  scale: [number, number, number]
+}) {
   return (
-    <>
-      {entries.map(([dirStr, text]) => {
-        const dir = Number(dirStr) as 0 | 1 | 2 | 3
-        const config = WALL_CONFIGS[dir]
-        if (!config || !text) return null
-        const pos = config.pos(halfWidth, halfDepth, thick)
-        return (
-          <GraffitiPlane
-            key={dir}
-            text={text}
-            position={pos}
-            rotation={config.rot}
-          />
-        )
-      })}
-    </>
+    <GraffitiPlane
+      text={text}
+      position={position}
+      rotation={rotation}
+      scale={scale}
+    />
   )
 }
 
@@ -146,15 +106,17 @@ function GraffitiPlane({
   text,
   position,
   rotation,
+  scale,
 }: {
   text: string
   position: [number, number, number]
   rotation: [number, number, number]
+  scale: [number, number, number]
 }) {
   const tex = useMemo(() => makeGraffitiTexture(text), [text])
 
   return (
-    <mesh position={position} rotation={rotation}>
+    <mesh position={position} rotation={rotation} scale={scale}>
       <planeGeometry args={[1.2, 0.28]} />
       <meshBasicMaterial map={tex} transparent alphaTest={0.05} />
     </mesh>
