@@ -1,4 +1,9 @@
+import { useFrame } from '@react-three/fiber'
+import React, { useEffect, useRef, useState } from 'react'
+import { type Group } from 'three'
+import { playerPos } from '../entities/controller/system'
 import FlickerLight from '../entities/flickerLight'
+import { enqueueMountCallback } from '../entities/mountScheduler'
 import { Room } from '../entities/room'
 import { Terminal } from '../entities/terminal'
 
@@ -16,8 +21,16 @@ export type RoomProps = {
   lockedDoors?: Partial<Record<0 | 1 | 2 | 3, boolean>>
   graffiti?: Partial<Record<0 | 1 | 2 | 3, string>>
 }
+
+const VISIBILITY_THRESHOLD = 2.0
+function checkNear(position: [number, number, number]) {
+  const dx = playerPos.x - position[0] * 2
+  const dz = playerPos.z - position[2] * 2
+  return dx * dx + dz * dz < VISIBILITY_THRESHOLD * VISIBILITY_THRESHOLD
+}
+
 export function BaseRoom({
-  position,
+  position = [0, 0, 0],
   roomId,
   hasTerminal = false,
   roomSize = 2,
@@ -28,6 +41,33 @@ export function BaseRoom({
   exitDoor,
   lockedDoors,
 }: RoomProps) {
+  const groupRef = useRef<Group>(null)
+  const isNearRef = useRef(checkNear(position))
+  const [mountedCount, setMountedCount] = useState(0)
+
+  // Snapshot children array once at mount — Room1/Room2 children are always stable
+  const childArrayRef = useRef(React.Children.toArray(children))
+
+  // Fixed items before the children: FlickerLight, optional Terminal
+  const fixedCount = 1 + (hasTerminal ? 1 : 0)
+  const totalItems = fixedCount + childArrayRef.current.length
+
+  useEffect(() => {
+    // Enqueue one callback per item — scheduler processes one per frame
+    const cleanups = Array.from({ length: totalItems }, () =>
+      enqueueMountCallback(() => setMountedCount((c) => c + 1)),
+    )
+    return () => cleanups.forEach((c) => c())
+  }, [])
+
+  useFrame(() => {
+    const next = checkNear(position)
+    if (next !== isNearRef.current) {
+      isNearRef.current = next
+      if (groupRef.current) groupRef.current.visible = next
+    }
+  })
+
   return (
     <Room
       scale={[roomSize, 1, roomSize]}
@@ -37,11 +77,15 @@ export function BaseRoom({
       keypads={keypadProp as any}
       hideCeiling={hideCeiling}
       exitDoor={exitDoor}
-      lockedDoors={lockedDoors}>
-      <FlickerLight position={[0, 0, 0]} intensity={20.0} defaultOn />
-
-      {hasTerminal && <Terminal roomId={roomId} />}
-      {children}
+      lockedDoors={lockedDoors}
+      visibleRef={isNearRef}>
+      <group ref={groupRef} visible={isNearRef.current}>
+        {mountedCount >= 1 && (
+          <FlickerLight position={[0, 0, 0]} intensity={20.0} defaultOn />
+        )}
+        {mountedCount >= 2 && hasTerminal && <Terminal roomId={roomId} />}
+        {childArrayRef.current.slice(0, mountedCount - fixedCount)}
+      </group>
     </Room>
   )
 }

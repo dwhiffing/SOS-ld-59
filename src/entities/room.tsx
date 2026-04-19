@@ -1,6 +1,8 @@
+import { useFrame } from '@react-three/fiber'
 import { useWorld } from 'koota/react'
-import { useEffect, useRef } from 'react'
-import { type Object3D } from 'three'
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
+import { type Group, type Object3D } from 'three'
+import { enqueueMountCallback } from '../entities/mountScheduler'
 import { Mesh, PhysicsBody } from '../shared/traits'
 import { RigidBody } from '@react-three/rapier'
 import Door from './door'
@@ -36,10 +38,18 @@ export function Room(props: {
   hideCeiling?: boolean
   exitDoor?: number
   lockedDoors?: Partial<Record<0 | 1 | 2 | 3, boolean>>
+  visibleRef?: RefObject<boolean>
 }) {
   const world = useWorld()
   const ref = useRef<Object3D>(null)
   const bodyRef = useRef<any>(null)
+  const wallsRef = useRef<Group>(null)
+
+  useFrame(() => {
+    if (props.visibleRef && wallsRef.current) {
+      wallsRef.current.visible = props.visibleRef.current
+    }
+  })
 
   useEffect(() => {
     const entity = world.spawn(
@@ -64,172 +74,161 @@ export function Room(props: {
     number,
   ]
 
+  const northZ = halfDepth - halfThick
+  const southZ = -halfDepth + halfThick
+  const eastX = halfWidth - halfThick
+  const westX = -halfWidth + halfThick
+  const roomId = props.roomId || `room-${position.join('-')}`
+  const hasDoor = {
+    north: !!props.doors?.includes(0),
+    south: !!props.doors?.includes(1),
+    east: !!props.doors?.includes(2),
+    west: !!props.doors?.includes(3),
+  }
+  const makeKeypad = (dir: 0 | 1 | 2 | 3) => {
+    const kp = props.keypads?.[dir]
+    return kp
+      ? {
+          ...kp,
+          position: DOOR_KEYPAD_POSITIONS[dir],
+          rotation: DOOR_KEYPAD_ROTATIONS[dir],
+        }
+      : undefined
+  }
+
+  const parts = useMemo(() => {
+    const items: React.ReactNode[] = []
+    items.push(
+      <Plane
+        key="floor"
+        colliderArgs={[halfWidth, halfThick, halfDepth]}
+        meshArgs={[roomWidth, thick, roomDepth]}
+        position={[0, -halfThick, 0]}
+        texturePath="floor"
+        textureScale={1}
+      />,
+    )
+    if (!props.hideCeiling)
+      items.push(
+        <Plane
+          key="ceiling"
+          colliderArgs={[halfWidth, halfThick, halfDepth]}
+          meshArgs={[roomWidth, thick, roomDepth]}
+          position={[0, roomHeight + halfThick, 0]}
+          texturePath="floor"
+          textureScale={0.35}
+        />,
+      )
+    items.push(
+      <Plane
+        key="north"
+        colliderArgs={[halfWidth, halfHeight, thick / 2]}
+        meshArgs={[roomWidth, roomHeight, thick]}
+        position={[0, halfHeight, northZ]}
+        texturePath="wall"
+        textureScale={2}
+        isDoor={hasDoor.north}
+        orientation="horizontal"
+      />,
+      <Plane
+        key="south"
+        colliderArgs={[halfWidth, halfHeight, thick / 2]}
+        meshArgs={[roomWidth, roomHeight, thick]}
+        position={[0, halfHeight, southZ]}
+        texturePath="wall"
+        textureScale={2}
+        isDoor={hasDoor.south}
+        orientation="horizontal"
+      />,
+      <Plane
+        key="east"
+        colliderArgs={[thick / 2, halfHeight, halfDepth]}
+        meshArgs={[thick, roomHeight, roomDepth]}
+        position={[eastX, halfHeight, 0]}
+        texturePath="wall"
+        textureScale={2}
+        isDoor={hasDoor.east}
+        orientation="vertical"
+      />,
+      <Plane
+        key="west"
+        colliderArgs={[thick / 2, halfHeight, halfDepth]}
+        meshArgs={[thick, roomHeight, roomDepth]}
+        position={[westX, halfHeight, 0]}
+        texturePath="wall"
+        textureScale={2}
+        isDoor={hasDoor.west}
+        orientation="vertical"
+      />,
+    )
+    if (hasDoor.north)
+      items.push(
+        <Door
+          key="door-north"
+          position={[0, doorH / 2, northZ]}
+          orientation="horizontal"
+          doorId={`${roomId}-north`}
+          keypad={makeKeypad(0)}
+          isExit={props.exitDoor === 0}
+          locked={props.lockedDoors?.[0]}
+        />,
+      )
+    if (hasDoor.south)
+      items.push(
+        <Door
+          key="door-south"
+          position={[0, doorH / 2, southZ]}
+          orientation="horizontal"
+          doorId={`${roomId}-south`}
+          keypad={makeKeypad(1)}
+          isExit={props.exitDoor === 1}
+          locked={props.lockedDoors?.[1]}
+        />,
+      )
+    if (hasDoor.east)
+      items.push(
+        <Door
+          key="door-east"
+          position={[eastX, doorH / 2, 0]}
+          orientation="vertical"
+          doorId={`${roomId}-east`}
+          keypad={makeKeypad(2)}
+          isExit={props.exitDoor === 2}
+          locked={props.lockedDoors?.[2]}
+        />,
+      )
+    if (hasDoor.west)
+      items.push(
+        <Door
+          key="door-west"
+          position={[westX, doorH / 2, 0]}
+          orientation="vertical"
+          doorId={`${roomId}-west`}
+          keypad={makeKeypad(3)}
+          isExit={props.exitDoor === 3}
+          locked={props.lockedDoors?.[3]}
+        />,
+      )
+    return items
+  }, [])
+
+  const [mountedCount, setMountedCount] = useState(0)
+
+  useEffect(() => {
+    const cleanups = Array.from({ length: parts.length }, () =>
+      enqueueMountCallback(() => setMountedCount((c) => c + 1)),
+    )
+    return () => cleanups.forEach((c) => c())
+  }, [])
+
   return (
     <RigidBody ref={bodyRef} type="fixed" colliders={false} position={position}>
       <group ref={ref} position={position}>
-        {/* Floor */}
-        <Plane
-          colliderArgs={[halfWidth, halfThick, halfDepth]}
-          meshArgs={[roomWidth, thick, roomDepth]}
-          position={[0, -halfThick, 0]}
-          texturePath="floor"
-          textureScale={1}
-        />
-
-        {/* Ceiling (hidden in topdown camera mode) */}
-        {!props.hideCeiling && (
-          <Plane
-            colliderArgs={[halfWidth, halfThick, halfDepth]}
-            meshArgs={[roomWidth, thick, roomDepth]}
-            position={[0, roomHeight + halfThick, 0]}
-            texturePath="floor"
-            textureScale={0.35}
-          />
-        )}
-
-        {/* Walls with optional centered doorways (controlled by props.doors) */}
-        {(() => {
-          // Doorway scale (reasonable defaults). Will clamp to room dimensions.
-
-          const doors = {
-            north: props.doors?.includes(0),
-            south: props.doors?.includes(1),
-            east: props.doors?.includes(2),
-            west: props.doors?.includes(3),
-          }
-
-          // North (+Z) and South (-Z)
-          const northZ = halfDepth - halfThick
-          const southZ = -halfDepth + halfThick
-          const eastX = halfWidth - halfThick
-          const westX = -halfWidth + halfThick
-
-          const parts: any[] = []
-
-          // North wall (split handled by Plane when isDoor=true)
-          parts.push(
-            <Plane
-              key={`north`}
-              colliderArgs={[halfWidth, halfHeight, thick / 2]}
-              meshArgs={[roomWidth, roomHeight, thick]}
-              position={[0, halfHeight, northZ]}
-              texturePath="wall"
-              textureScale={2}
-              isDoor={doors.north}
-              orientation="horizontal"
-            />,
-          )
-
-          // South wall
-          parts.push(
-            <Plane
-              key={`south`}
-              colliderArgs={[halfWidth, halfHeight, thick / 2]}
-              meshArgs={[roomWidth, roomHeight, thick]}
-              position={[0, halfHeight, southZ]}
-              texturePath="wall"
-              textureScale={2}
-              isDoor={doors.south}
-              orientation="horizontal"
-            />,
-          )
-
-          // East wall
-          parts.push(
-            <Plane
-              key={`east`}
-              colliderArgs={[thick / 2, halfHeight, halfDepth]}
-              meshArgs={[thick, roomHeight, roomDepth]}
-              position={[eastX, halfHeight, 0]}
-              texturePath="wall"
-              textureScale={2}
-              isDoor={doors.east}
-              orientation="vertical"
-            />,
-          )
-
-          // West wall
-          parts.push(
-            <Plane
-              key={`west`}
-              colliderArgs={[thick / 2, halfHeight, halfDepth]}
-              meshArgs={[thick, roomHeight, roomDepth]}
-              position={[westX, halfHeight, 0]}
-              texturePath="wall"
-              textureScale={2}
-              isDoor={doors.west}
-              orientation="vertical"
-            />,
-          )
-
-          const generateDoorId = (roomId: string, direction: string) =>
-            `${roomId}-${direction}`
-
-          const roomId = props.roomId || `room-${position.join('-')}`
-
-          const makeKeypad = (dir: 0 | 1 | 2 | 3) => {
-            const kp = props.keypads?.[dir]
-            return kp
-              ? {
-                  ...kp,
-                  position: DOOR_KEYPAD_POSITIONS[dir],
-                  rotation: DOOR_KEYPAD_ROTATIONS[dir],
-                }
-              : undefined
-          }
-
-          if (doors.north)
-            parts.push(
-              <Door
-                key="door-north"
-                position={[0, doorH / 2, northZ]}
-                orientation="horizontal"
-                doorId={generateDoorId(roomId, 'north')}
-                keypad={makeKeypad(0)}
-                isExit={props.exitDoor === 0}
-                locked={props.lockedDoors?.[0]}
-              />,
-            )
-          if (doors.south)
-            parts.push(
-              <Door
-                key="door-south"
-                position={[0, doorH / 2, southZ]}
-                orientation="horizontal"
-                doorId={generateDoorId(roomId, 'south')}
-                keypad={makeKeypad(1)}
-                isExit={props.exitDoor === 1}
-                locked={props.lockedDoors?.[1]}
-              />,
-            )
-          if (doors.east)
-            parts.push(
-              <Door
-                key="door-east"
-                position={[eastX, doorH / 2, 0]}
-                orientation="vertical"
-                doorId={generateDoorId(roomId, 'east')}
-                keypad={makeKeypad(2)}
-                isExit={props.exitDoor === 2}
-                locked={props.lockedDoors?.[2]}
-              />,
-            )
-          if (doors.west)
-            parts.push(
-              <Door
-                key="door-west"
-                position={[westX, doorH / 2, 0]}
-                orientation="vertical"
-                doorId={generateDoorId(roomId, 'west')}
-                keypad={makeKeypad(3)}
-                isExit={props.exitDoor === 3}
-                locked={props.lockedDoors?.[3]}
-              />,
-            )
-
-          return parts
-        })()}
-
+        <group
+          ref={wallsRef}
+          visible={props.visibleRef ? props.visibleRef.current : true}>
+          {parts.slice(0, mountedCount)}
+        </group>
         {props.children}
       </group>
     </RigidBody>

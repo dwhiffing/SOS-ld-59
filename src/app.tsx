@@ -11,7 +11,6 @@ import {
 } from './entities/ambience'
 import { setMusicMuted } from './entities/ambience'
 import { playGameStart, setSfxMuted } from './entities/sounds'
-// @ts-expect-error css import
 import './index.css'
 
 initTerminalSearch()
@@ -59,7 +58,9 @@ export function App() {
 
   return (
     <div className="app-root">
-      {currentScene === 'menu' ? <Menu /> : <Game />}
+      {currentScene === 'menu' && <Menu />}
+
+      <Game />
 
       <div
         className={`scene-fade ${isFading ? 'visible' : ''}`}

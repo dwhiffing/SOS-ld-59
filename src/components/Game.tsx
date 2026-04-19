@@ -1,5 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Canvas, useThree } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { processMountQueue } from '../entities/mountScheduler'
+function MountScheduler() {
+  useFrame(() => {
+    processMountQueue()
+  })
+  return null
+}
 // Compiles all shaders (including from initially-hidden rooms) before first frame
 function ShaderWarmup() {
   const { gl, scene, camera } = useThree()
@@ -24,9 +31,11 @@ export function Game() {
           threshold={0.75}
           flipflops={4}
           onIncline={() => setDpr(2)}
-          onDecline={() => setDpr(1)} />
+          onDecline={() => setDpr(1)}
+        />
         <Preload all />
         <ShaderWarmup />
+        <MountScheduler />
         <KootaSystems>
           <DebugLevel />
         </KootaSystems>

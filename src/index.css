@@ -17,6 +17,11 @@ body {
   height: 100vh;
   position: relative;
 }
+
+.menu {
+  z-index: 1000;
+  background-color: black;
+}
 .ui {
   position: absolute;
   bottom: 16px;

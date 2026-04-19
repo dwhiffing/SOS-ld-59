@@ -1,16 +1,19 @@
 import { Physics } from '@react-three/rapier'
-import RapierDebug from '../shared/rapierDebug'
-import { Controller } from '../entities/controller'
-
-import mapData from './1.json'
 import {
   getSpawnPosition,
   TiledMap,
   TiledMapData,
 } from '../components/TiledMap'
+import { Controller } from '../entities/controller'
+import { playerPos } from '../entities/controller/system'
+import RapierDebug from '../shared/rapierDebug'
+import mapData from './1.json'
 
 export function DebugLevel() {
   const spawnPos = getSpawnPosition(mapData as TiledMapData)
+  playerPos.x = spawnPos[0]
+  playerPos.y = spawnPos[1]
+  playerPos.z = spawnPos[2]
   return (
     <>
       <Physics gravity={[0, -9.81, 0]}>
