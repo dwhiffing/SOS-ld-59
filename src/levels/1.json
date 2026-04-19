@@ -11,7 +11,7 @@
                  "gid":18,
                  "height":16,
                  "id":5,
-                 "name":"start",
+                 "name":"start_",
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -41,7 +41,7 @@
                  "gid":10,
                  "height":16,
                  "id":7,
-                 "name":"",
+                 "name":"start",
                  "properties":[
                         {
                          "name":"hasTerminal",
@@ -110,6 +110,11 @@
                  "id":13,
                  "name":"",
                  "properties":[
+                        {
+                         "name":"door2Locked",
+                         "type":"int",
+                         "value":1
+                        }, 
                         {
                          "name":"hasTerminal",
                          "type":"bool",

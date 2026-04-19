@@ -10,12 +10,24 @@ import {
   RESPONSE_PAUSE_MS,
 } from '../morseRecorder'
 import { queryTerminal, terminalSearchReady } from '../terminalSearch'
+import {
+  playDoorLockedClick,
+  playKeypad,
+  playMorseHi,
+  playMorseLo,
+  startStatic,
+  stopStatic,
+  tickFootstep,
+} from '../sounds'
+import { keypadsInError } from '../keypad'
 import { Controllable, NearestItem } from './traits'
 
 let keys = new Set<string>()
 let justPressed = new Set<string>()
 let initialized = false
 let _lastCamAngle: Quaternion = new Quaternion(0, 0, 0, 0)
+let _lastKeyHeld = false
+let _lastSignalVal = 0
 const AUTO_SUBMIT_MS = 1500
 const FF_SPEED = 10
 
@@ -42,6 +54,28 @@ export const controllerInputSystem = (world: World, _delta: number) => {
 
   updateMorseState(now)
 
+  const isActive = morse.phase === 'recording' || morse.phase === 'responding'
+  if (isActive) {
+    if (morse.phase === 'responding') startStatic()
+    if (morse.phase === 'recording') {
+      if (morse.keyHeld && !_lastKeyHeld) playMorseHi()
+      else if (!morse.keyHeld && _lastKeyHeld) playMorseLo()
+      _lastKeyHeld = morse.keyHeld
+    } else {
+      const sig = morse.signal[morse.playhead] ?? 0
+      if (sig === 1 && _lastSignalVal === 0) playMorseHi(480)
+      else if (sig === 0 && _lastSignalVal === 1) playMorseLo()
+      _lastSignalVal = sig
+    }
+  } else {
+    stopStatic()
+    if (_lastKeyHeld || _lastSignalVal) {
+      playMorseLo()
+      _lastKeyHeld = false
+      _lastSignalVal = 0
+    }
+  }
+
   if (justPressed.has(' ') && morse.phase !== 'responding') {
     const nearest = world.get(NearestItem) as any
     const nearestName = nearest?.mesh?.name ?? ''
@@ -55,7 +89,7 @@ export const controllerInputSystem = (world: World, _delta: number) => {
     }
   }
 
-  moveEntities(world)
+  moveEntities(world, now)
 
   justPressed = new Set([])
 }
@@ -175,6 +209,8 @@ function useKeypad(nearest: any) {
   const id = nearest?.mesh?.userData?.keypadId
   const digit = nearest?.mesh?.userData?.digit
   if (!id || !digit) return
+  if (keypadsInError.has(id)) return
+  playKeypad(digit)
   useGameStore.getState().submitKeypadDigit(id, digit)
 }
 
@@ -183,7 +219,10 @@ function useDoor(world: World, nearest: any) {
   if (!id) return
 
   useGameStore.getState().openDoor(id)
-  if (!useGameStore.getState().isDoorOpen(id)) return
+  if (!useGameStore.getState().isDoorOpen(id)) {
+    playDoorLockedClick()
+    return
+  }
   const store = useGameStore.getState()
 
   const dPos = new Vector3()
@@ -202,7 +241,7 @@ function useDoor(world: World, nearest: any) {
   if (door) store.openDoor(door.userData.doorId, true)
 }
 
-function moveEntities(world: World) {
+function moveEntities(world: World, now: number) {
   const forwardKey = keys.has('w') || keys.has('arrowup') ? 1 : 0
   const backKey = keys.has('s') || keys.has('arrowdown') ? 1 : 0
   const leftKey = keys.has('a') || keys.has('arrowleft') ? 1 : 0
@@ -224,8 +263,9 @@ function moveEntities(world: World) {
     if (move.lengthSq() > 0) move.normalize()
 
     const phys = entity.get(PhysicsBody)?.api as any
-    const speed = 1.1
+    const speed = 1.05
     phys.current.setLinvel({ x: move.x * speed, y: 0, z: move.z * speed }, true)
+    tickFootstep(move.lengthSq() > 0, now)
 
     const dot = Math.abs(_lastCamAngle.dot(quat))
     const angle = Math.acos(Math.max(-1, Math.min(1, dot)))

@@ -5,6 +5,9 @@ import { useTraitEffect, useWorld } from 'koota/react'
 import { CanvasTexture, NearestFilter, type Object3D } from 'three'
 import { Mesh } from '../shared/traits'
 import { useGameStore } from '../stores/gameStore'
+import { playDoorLocked } from './sounds'
+
+export const keypadsInError = new Set<string>()
 import { NearestItem } from './controller/traits'
 
 const W = 128
@@ -147,9 +150,12 @@ export function Keypad({
   useEffect(() => {
     if (!keypad || isUnlocked || keypad.input.length < 4) return
     isErrorRef.current = true
+    keypadsInError.add(keypadId)
+    playDoorLocked()
     const timer = setTimeout(() => {
-      isErrorRef.current = false
       resetKeypadInput(keypadId)
+      keypadsInError.delete(keypadId)
+      requestAnimationFrame(() => { isErrorRef.current = false })
     }, 1000)
     return () => clearTimeout(timer)
   }, [keypad?.input, isUnlocked, keypadId, resetKeypadInput])

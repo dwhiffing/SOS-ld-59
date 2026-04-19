@@ -4,6 +4,7 @@ import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import { useTraitEffect, useWorld } from 'koota/react'
 import { CanvasTexture, SRGBColorSpace } from 'three'
 import { initialState, useGameStore } from '../stores/gameStore'
+import { playDoorClose, playDoorOpen, playDoorUnlock } from './sounds'
 import { NearestItem } from './controller/traits'
 import Keypad from './keypad'
 import { doorH, doorW } from './room'
@@ -66,6 +67,27 @@ export const Door: React.FC<DoorProps> = ({
 
   const isOpen = useGameStore((s) => s.isDoorOpen(doorId ?? ''))
   const isLocked = useGameStore((s) => s.lockedDoors[doorId ?? ''])
+  const [showBars, setShowBars] = useState(!!locked)
+
+  const prevLockedRef = useRef(isLocked)
+  useEffect(() => {
+    if (isLocked) {
+      setShowBars(true)
+      prevLockedRef.current = true
+      return
+    }
+    if (prevLockedRef.current) playDoorUnlock()
+    prevLockedRef.current = false
+    const t = setTimeout(() => setShowBars(false), 2000)
+    return () => clearTimeout(t)
+  }, [isLocked])
+
+  const barSpring = useSpring({
+    position: isLocked ? [0, 0, 0] : [0, doorH * 1.5, 0],
+    config: isLocked
+      ? { tension: 9999, friction: 9999 } // instant snap when locking
+      : { tension: 120, friction: 120 }, // animate only when unlocking
+  })
 
   const args: [number, number, number] =
     orientation === 'horizontal'
@@ -85,11 +107,15 @@ export const Door: React.FC<DoorProps> = ({
 
   useEffect(() => {
     if (!isOpen) return
+    playDoorOpen()
     if (isExit) {
       useGameStore.setState(initialState)
       useGameStore.getState().setScene('menu')
     } else {
-      setTimeout(() => useGameStore.getState().closeDoor(doorId), 3000)
+      setTimeout(() => {
+        useGameStore.getState().closeDoor(doorId)
+        playDoorClose()
+      }, 3000)
     }
   }, [isOpen, doorId, isExit])
 
@@ -121,6 +147,35 @@ export const Door: React.FC<DoorProps> = ({
           />
         )}
 
+        {showBars &&
+          (() => {
+            const dir = doorId.split('-').pop()
+            const front =
+              (thickness / 2 + 0.015) *
+              (dir === 'north' || dir === 'east' ? -1 : 1)
+            return (
+              <animated.group position={barSpring.position as unknown as any}>
+                {[0.2, 0.4, 0.6, 0.8].map((t, i) => {
+                  const offset = (t - 0.5) * doorW
+                  const pos: [number, number, number] =
+                    dir === 'north' || dir === 'south'
+                      ? [offset, 0, front]
+                      : [front, 0, offset]
+                  return (
+                    <mesh key={i} position={pos} castShadow>
+                      <boxGeometry args={[0.025, doorH, 0.025]} />
+                      <meshStandardMaterial
+                        color="#888"
+                        roughness={0.4}
+                        metalness={0.9}
+                      />
+                    </mesh>
+                  )
+                })}
+              </animated.group>
+            )
+          })()}
+
         <animated.group position={spring.position as unknown as any}>
           <mesh castShadow>
             <boxGeometry args={_args} />
@@ -133,7 +188,7 @@ export const Door: React.FC<DoorProps> = ({
             />
             <AnimatedTint
               color={isLocked ? 'red' : 'white'}
-              opacity={isOutlined ? 0.02 : 0}
+              opacity={isOutlined ? 0.05 : 0}
             />
           </mesh>
         </animated.group>
