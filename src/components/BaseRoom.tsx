@@ -9,6 +9,7 @@ import { Terminal } from '../entities/terminal'
 
 export type RoomProps = {
   roomId: string
+  roomName?: string
   hasTerminal?: boolean
   position?: [number, number, number]
   roomSize?: number
@@ -32,6 +33,7 @@ function checkNear(position: [number, number, number]) {
 export function BaseRoom({
   position = [0, 0, 0],
   roomId,
+  roomName,
   hasTerminal = false,
   roomSize = 2,
   keypadProp,
@@ -83,7 +85,7 @@ export function BaseRoom({
         {mountedCount >= 1 && (
           <FlickerLight position={[0, 0, 0]} intensity={20.0} defaultOn />
         )}
-        {mountedCount >= 2 && hasTerminal && <Terminal roomId={roomId} />}
+        {mountedCount >= 2 && hasTerminal && <Terminal roomId={roomId} roomName={roomName} />}
         {childArrayRef.current.slice(0, mountedCount - fixedCount)}
       </group>
     </Room>

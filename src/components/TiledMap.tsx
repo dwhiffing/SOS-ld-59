@@ -111,6 +111,7 @@ export function TiledMap({
             variant: variantValue != null ? Number(variantValue) : 0,
             exitDoor: exitDoorValue != null ? Number(exitDoorValue) : undefined,
             lockedDoors,
+            roomName: obj.name || undefined,
           },
         ]
       }),
@@ -137,6 +138,7 @@ export function TiledMap({
     variant,
     exitDoor,
     lockedDoors,
+    roomName,
   } of roomObjects) {
     const keypadProp =
       Object.keys(keypads).length > 0
@@ -153,6 +155,7 @@ export function TiledMap({
         position={positions[key]}
         doors={doors as [number?, number?, number?, number?]}
         roomId={key}
+        roomName={roomName}
         keypadProp={keypadProp as any}
         hasTerminal={hasTerminal}
         variant={variant}

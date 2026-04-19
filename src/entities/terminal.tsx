@@ -118,10 +118,12 @@ export function Terminal({
   position = [0, 0, 0] as [number, number, number],
   size = [0.15, 0.45, 0.15] as [number, number, number],
   roomId,
+  roomName,
 }: {
   position?: [number, number, number]
   size?: [number, number, number]
   roomId?: string
+  roomName?: string
 }) {
   const world = useWorld()
   const ref = useRef<Object3D | null>(null)
@@ -191,7 +193,7 @@ export function Terminal({
           position[1] + (TERMINAL_TABLE_HEIGHT - 0.025),
           position[2],
         ]}>
-        <mesh ref={ref} name="terminal" visible={false} userData={{ roomId }}>
+        <mesh ref={ref} name="terminal" visible={false} userData={{ roomId, roomName }}>
           <boxGeometry args={size} />
         </mesh>
 

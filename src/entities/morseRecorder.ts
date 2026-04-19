@@ -19,6 +19,7 @@ export const morse = {
   keyHeld: false,
   responseSignal: null as Uint8Array<ArrayBufferLike> | null, // set async before startResponse fires
   terminalRoomId: '',
+  terminalRoomName: '',
 }
 
 const RESPONSE_PAUSE_MS = 1000

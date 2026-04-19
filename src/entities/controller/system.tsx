@@ -109,6 +109,8 @@ export const controllerInputSystem = (world: World, _delta: number) => {
       useKeypad(nearest)
     } else if (nearestName === 'terminal' && morse.phase === 'idle') {
       morse.terminalRoomId = nearest.mesh.userData.roomId ?? ''
+      morse.terminalRoomName =
+        nearest.mesh.userData.roomName ?? nearest.mesh.userData.roomId ?? ''
       startRecording(now)
     } else if (nearestName === 'door') {
       useDoor(world, nearest)
@@ -210,17 +212,17 @@ function advanceRecording(now: number) {
   if (newPlayhead >= BITMAP_WIDTH) {
     morse.phase = 'done'
     morse.doneTime = now
-    resolveResponse(morse.signal, morse.terminalRoomId)
+    resolveResponse(morse.signal, morse.terminalRoomName)
   }
 }
 
-async function resolveResponse(signal: Uint8Array, roomId: string) {
+async function resolveResponse(signal: Uint8Array, roomName: string) {
   const letters = decodeMorse(signal, signal.length)
   const query = letters.map((l) => l.char).join('')
   const { response: responseText, entry } = terminalSearchReady
-    ? await queryTerminal(query)
+    ? await queryTerminal(query, roomName)
     : { response: 'LOADING', entry: null }
-  entry?.sideEffect?.(roomId)
+  entry?.sideEffect?.(roomName)
   morse.responseSignal = encodeResponse(responseText)
 }
 

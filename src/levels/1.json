@@ -41,7 +41,7 @@
                  "gid":10,
                  "height":16,
                  "id":7,
-                 "name":"",
+                 "name":"3",
                  "properties":[
                         {
                          "name":"hasTerminal",
@@ -84,7 +84,7 @@
                  "gid":17,
                  "height":16,
                  "id":11,
-                 "name":"",
+                 "name":"5",
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -96,7 +96,7 @@
                  "gid":19,
                  "height":16,
                  "id":12,
-                 "name":"",
+                 "name":"4",
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -108,7 +108,7 @@
                  "gid":5,
                  "height":16,
                  "id":13,
-                 "name":"",
+                 "name":"2",
                  "properties":[
                         {
                          "name":"door2Locked",
@@ -156,7 +156,7 @@
                  "gid":5,
                  "height":16,
                  "id":14,
-                 "name":"",
+                 "name":"1",
                  "properties":[
                         {
                          "name":"door0Locked",
