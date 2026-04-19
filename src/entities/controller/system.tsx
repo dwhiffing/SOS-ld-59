@@ -10,11 +10,13 @@ import {
   morse,
   RESPONSE_PAUSE_MS,
 } from '../morseRecorder'
+import { setMusicMuted } from '../ambience'
 import {
   playDoorLockedClick,
   playKeypad,
   playMorseHi,
   playMorseLo,
+  setSfxMuted,
   startStatic,
   stopStatic,
   tickFootstep,
@@ -74,6 +76,13 @@ export const controllerInputSystem = (world: World, _delta: number) => {
       _lastKeyHeld = false
       _lastSignalVal = 0
     }
+  }
+
+  if (justPressed.has('m')) {
+    useGameStore.getState().cycleSoundMode()
+    const mode = useGameStore.getState().soundMode
+    setMusicMuted(mode === 'muteMusic' || mode === 'muteAll')
+    setSfxMuted(mode === 'muteAll')
   }
 
   if (justPressed.has(' ')) {

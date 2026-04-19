@@ -47,6 +47,12 @@ body {
   overflow: hidden;
 }
 
+@keyframes soundToastFade {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+
 .crosshair {
   display: flex;
   justify-content: center;

@@ -6,7 +6,11 @@ export interface KeypadData {
   doorId?: string
 }
 
+export type SoundMode = 'all' | 'muteMusic' | 'muteAll'
+
 export interface GameState {
+  soundMode: SoundMode
+  cycleSoundMode: () => void
   lights: Record<string, boolean>
   lockedDoors: Record<string, boolean>
   openDoors: Record<string, boolean>
@@ -26,12 +30,21 @@ export interface GameState {
   resetKeypadInput: (id: string) => void
 }
 
+const SOUND_MODE_KEY = 'soundMode'
+const SOUND_MODES: SoundMode[] = ['all', 'muteMusic', 'muteAll']
+
+function loadSoundMode(): SoundMode {
+  const stored = localStorage.getItem(SOUND_MODE_KEY)
+  return (SOUND_MODES.includes(stored as SoundMode) ? stored : 'all') as SoundMode
+}
+
 export const initialState = {
   lights: {},
   lockedDoors: {} as Record<string, boolean>,
   openDoors: {},
   keypads: {} as Record<string, KeypadData>,
-  scene: 'game' as 'menu' | 'game',
+  scene: 'menu' as 'menu' | 'game',
+  soundMode: loadSoundMode(),
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -86,6 +99,12 @@ export const useGameStore = create<GameState>((set, get) => ({
     const kp = get().keypads[id]
     if (!kp) return
     set((s) => ({ keypads: { ...s.keypads, [id]: { ...kp, input: '' } } }))
+  },
+  cycleSoundMode: () => {
+    const current = get().soundMode
+    const next = SOUND_MODES[(SOUND_MODES.indexOf(current) + 1) % SOUND_MODES.length]
+    localStorage.setItem(SOUND_MODE_KEY, next)
+    set({ soundMode: next })
   },
   setScene: (scene: 'menu' | 'game') => set(() => ({ scene })),
   resetGame: () => set(() => initialState),

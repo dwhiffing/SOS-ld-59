@@ -9,11 +9,19 @@ import {
   startMenuHowl,
   stopMenuHowl,
 } from './entities/ambience'
-import { playGameStart } from './entities/sounds'
+import { setMusicMuted } from './entities/ambience'
+import { playGameStart, setSfxMuted } from './entities/sounds'
 // @ts-expect-error css import
 import './index.css'
 
 initTerminalSearch()
+
+// Apply persisted sound mode on load
+{
+  const mode = useGameStore.getState().soundMode
+  setMusicMuted(mode === 'muteMusic' || mode === 'muteAll')
+  setSfxMuted(mode === 'muteAll')
+}
 
 export function App() {
   const targetScene = useGameStore((s) => s.scene)

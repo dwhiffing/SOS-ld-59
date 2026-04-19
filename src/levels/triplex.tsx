@@ -7,7 +7,7 @@ export function DebugLevel() {
   return (
     <RootProviders>
       <Physics gravity={[0, -9.81, 0]}>
-        <Room2
+        <Room1
           roomId="test"
           hasTerminal={false}
           position={[0, 0, 0]}

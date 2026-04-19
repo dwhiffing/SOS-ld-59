@@ -180,6 +180,16 @@ export function startAmbience() {
   master.gain.linearRampToValueAtTime(1, ctx.currentTime + 8)
 }
 
+export function setMusicMuted(muted: boolean) {
+  if (muted) {
+    master.gain.cancelScheduledValues(ctx.currentTime)
+    master.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5)
+  } else {
+    master.gain.cancelScheduledValues(ctx.currentTime)
+    master.gain.linearRampToValueAtTime(1, ctx.currentTime + 0.5)
+  }
+}
+
 export function stopAmbience() {
   if (!running) return
   running = false

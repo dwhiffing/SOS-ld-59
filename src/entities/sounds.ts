@@ -1,5 +1,13 @@
 const ctx = new AudioContext()
 
+const sfxMaster = ctx.createGain()
+sfxMaster.gain.value = 1
+sfxMaster.connect(ctx.destination)
+
+export function setSfxMuted(muted: boolean) {
+  sfxMaster.gain.value = muted ? 0 : 1
+}
+
 function playDoor(duration: number, thudGain: number, scrapeGain: number) {
   const rate = ctx.sampleRate
   const len = Math.floor(rate * duration)
@@ -54,7 +62,7 @@ function playDoor(duration: number, thudGain: number, scrapeGain: number) {
   thudFilter.connect(thudOut)
   thudOut.connect(master)
 
-  master.connect(ctx.destination)
+  master.connect(sfxMaster)
   source.start()
 }
 
@@ -85,7 +93,7 @@ export function tickFootstep(isMoving: boolean, now: number) {
 
   source.connect(filter)
   filter.connect(gain)
-  gain.connect(ctx.destination)
+  gain.connect(sfxMaster)
   source.start()
 }
 
@@ -120,7 +128,7 @@ export function startStatic() {
 
   staticNode.connect(filter)
   filter.connect(staticGain)
-  staticGain.connect(ctx.destination)
+  staticGain.connect(sfxMaster)
   staticNode.start()
 }
 
@@ -146,7 +154,7 @@ export function playMorseHi(freq = 600) {
   gain.gain.value = 0.2
 
   morseOsc.connect(gain)
-  gain.connect(ctx.destination)
+  gain.connect(sfxMaster)
   morseOsc.start()
 }
 
@@ -191,7 +199,7 @@ export function playKeypad(digit: string) {
     gain.gain.exponentialRampToValueAtTime(0.001, now + dur)
 
     osc.connect(gain)
-    gain.connect(ctx.destination)
+    gain.connect(sfxMaster)
     osc.start(now)
     osc.stop(now + dur)
   }
@@ -226,7 +234,7 @@ export function playDoorLockedClick() {
 
     source.connect(filter)
     filter.connect(g)
-    g.connect(ctx.destination)
+    g.connect(sfxMaster)
     source.start(now + offset)
   }
 }
@@ -245,7 +253,7 @@ export function playDoorLocked() {
   gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22)
 
   osc.connect(gain)
-  gain.connect(ctx.destination)
+  gain.connect(sfxMaster)
   osc.start(now)
   osc.stop(now + 0.22)
 }
@@ -277,7 +285,7 @@ export function playDoorUnlock() {
 
   source.connect(filter)
   filter.connect(gain)
-  gain.connect(ctx.destination)
+  gain.connect(sfxMaster)
   source.start()
 }
 
@@ -305,7 +313,7 @@ export function playGameStart() {
   const reverbGain = ctx.createGain()
   reverbGain.gain.value = 1.2
   reverb.connect(reverbGain)
-  reverbGain.connect(ctx.destination)
+  reverbGain.connect(sfxMaster)
 
   // slow descending low tones, wide spacing
   const beeps: [number, number][] = [
