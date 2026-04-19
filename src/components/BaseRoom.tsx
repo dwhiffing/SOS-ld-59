@@ -17,7 +17,6 @@ export type RoomProps = {
   doors?: [number?, number?, number?, number?]
   children?: React.ReactNode
   hideCeiling?: boolean
-  variant?: number
   exitDoor?: number
   lockedDoors?: Partial<Record<0 | 1 | 2 | 3, boolean>>
   graffiti?: Partial<Record<0 | 1 | 2 | 3, string>>
