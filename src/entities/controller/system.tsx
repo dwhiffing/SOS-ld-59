@@ -3,13 +3,13 @@ import { Quaternion, Raycaster, Vector3 } from 'three'
 import { BITMAP_WIDTH, MORSE_DURATION } from '../../constants'
 import { Mesh, PhysicsBody } from '../../shared/traits'
 import useGameStore from '../../stores/gameStore'
+import { keypadsInError } from '../keypad'
 import {
   decodeMorse,
   encodeResponse,
   morse,
   RESPONSE_PAUSE_MS,
 } from '../morseRecorder'
-import { queryTerminal, terminalSearchReady } from '../terminalSearch'
 import {
   playDoorLockedClick,
   playKeypad,
@@ -19,7 +19,7 @@ import {
   stopStatic,
   tickFootstep,
 } from '../sounds'
-import { keypadsInError } from '../keypad'
+import { queryTerminal, terminalSearchReady } from '../terminalSearch'
 import { Controllable, NearestItem } from './traits'
 
 let keys = new Set<string>()
@@ -76,12 +76,12 @@ export const controllerInputSystem = (world: World, _delta: number) => {
     }
   }
 
-  if (justPressed.has(' ') && morse.phase !== 'responding') {
+  if (justPressed.has(' ')) {
     const nearest = world.get(NearestItem) as any
     const nearestName = nearest?.mesh?.name ?? ''
     if (nearestName === 'keypad-btn') {
       useKeypad(nearest)
-    } else if (nearestName === 'terminal') {
+    } else if (nearestName === 'terminal' && morse.phase === 'idle') {
       morse.terminalRoomId = nearest.mesh.userData.roomId ?? ''
       startRecording(now)
     } else if (nearestName === 'door') {
@@ -122,6 +122,8 @@ function updateMorseState(now: number) {
     } else {
       advanceResponse(now)
     }
+  } else if (morse.phase === 'responded') {
+    cancelRecording()
   }
 }
 
