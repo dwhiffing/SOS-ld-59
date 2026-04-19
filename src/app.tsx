@@ -3,7 +3,13 @@ import useGameStore from './stores/gameStore'
 import Game from './components/Game'
 import Menu from './components/Menu'
 import { initTerminalSearch } from './entities/terminalSearch'
-import { startAmbience, stopAmbience } from './entities/ambience'
+import {
+  startAmbience,
+  stopAmbience,
+  startMenuHowl,
+  stopMenuHowl,
+} from './entities/ambience'
+import { playGameStart } from './entities/sounds'
 // @ts-expect-error css import
 import './index.css'
 
@@ -13,7 +19,7 @@ export function App() {
   const targetScene = useGameStore((s) => s.scene)
   const [currentScene, setCurrentScene] = useState<'menu' | 'game'>(targetScene)
   const [isFading, setIsFading] = useState(false)
-  const FADE_DURATION = 800
+  const FADE_DURATION = 900
   const lastTarget = useRef(targetScene)
 
   useEffect(() => {
@@ -21,8 +27,14 @@ export function App() {
     lastTarget.current = targetScene
 
     setIsFading(true)
-    if (targetScene === 'game') startAmbience()
-    else stopAmbience()
+    if (targetScene === 'game') {
+      stopMenuHowl()
+      startAmbience()
+      playGameStart()
+    } else {
+      stopAmbience()
+      startMenuHowl()
+    }
 
     const toBlack = window.setTimeout(() => {
       setCurrentScene(targetScene)

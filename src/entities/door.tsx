@@ -5,6 +5,7 @@ import { useTraitEffect, useWorld } from 'koota/react'
 import { CanvasTexture, SRGBColorSpace } from 'three'
 import { initialState, useGameStore } from '../stores/gameStore'
 import { playDoorClose, playDoorOpen, playDoorUnlock } from './sounds'
+import { stopAmbience } from './ambience'
 import { NearestItem } from './controller/traits'
 import Keypad from './keypad'
 import { doorH, doorW } from './room'
@@ -109,6 +110,7 @@ export const Door: React.FC<DoorProps> = ({
     if (!isOpen) return
     playDoorOpen()
     if (isExit) {
+      stopAmbience()
       useGameStore.setState(initialState)
       useGameStore.getState().setScene('menu')
     } else {

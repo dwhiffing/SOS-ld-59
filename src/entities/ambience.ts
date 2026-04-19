@@ -177,11 +177,73 @@ export function startAmbience() {
   startWind()
   scheduleCycle()
   master.gain.setValueAtTime(0, ctx.currentTime)
-  master.gain.linearRampToValueAtTime(1, ctx.currentTime + 4)
+  master.gain.linearRampToValueAtTime(1, ctx.currentTime + 8)
 }
 
 export function stopAmbience() {
   if (!running) return
   running = false
-  master.gain.linearRampToValueAtTime(0, ctx.currentTime + 2)
+  master.gain.linearRampToValueAtTime(0, ctx.currentTime + 6)
+}
+
+// --- Menu howl ---
+
+let menuHowlNodes: { source: AudioBufferSourceNode; gain: GainNode } | null = null
+
+export function startMenuHowl() {
+  if (menuHowlNodes) return
+
+  const rate = ctx.sampleRate
+  const len = rate * 6
+  const buffer = ctx.createBuffer(2, len, rate)
+  for (let c = 0; c < 2; c++) {
+    const data = buffer.getChannelData(c)
+    for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1
+  }
+
+  const source = ctx.createBufferSource()
+  source.buffer = buffer
+  source.loop = true
+
+  // Two bandpass filters in series for a hollow howl
+  const f1 = ctx.createBiquadFilter()
+  f1.type = 'bandpass'
+  f1.frequency.value = 320
+  f1.Q.value = 1.8
+
+  const f2 = ctx.createBiquadFilter()
+  f2.type = 'bandpass'
+  f2.frequency.value = 640
+  f2.Q.value = 2.5
+
+  // slow LFO sweeps the pitch of the howl
+  const lfo = ctx.createOscillator()
+  lfo.frequency.value = 0.04
+  const lfoGain = ctx.createGain()
+  lfoGain.gain.value = 140
+  lfo.connect(lfoGain)
+  lfoGain.connect(f1.frequency)
+  lfoGain.connect(f2.frequency)
+  lfo.start()
+
+  const gain = ctx.createGain()
+  gain.gain.setValueAtTime(0, ctx.currentTime)
+  gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 8)
+
+  source.connect(f1)
+  f1.connect(f2)
+  f2.connect(gain)
+  gain.connect(ctx.destination)
+  source.start()
+
+  menuHowlNodes = { source, gain }
+}
+
+export function stopMenuHowl() {
+  if (!menuHowlNodes) return
+  const { gain, source } = menuHowlNodes
+  menuHowlNodes = null
+  const stop = ctx.currentTime + 6
+  gain.gain.linearRampToValueAtTime(0, stop)
+  setTimeout(() => source.stop(), 6100)
 }

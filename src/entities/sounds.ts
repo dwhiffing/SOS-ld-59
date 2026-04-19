@@ -288,3 +288,46 @@ export function playDoorOpen() {
 export function playDoorClose() {
   playDoor(0.6, 1.4, 0.4)
 }
+
+export function playGameStart() {
+  const now = ctx.currentTime
+  // long reverb tail
+  const reverb = ctx.createConvolver()
+  const rate = ctx.sampleRate
+  const rLen = Math.floor(rate * 5)
+  const rBuf = ctx.createBuffer(2, rLen, rate)
+  for (let c = 0; c < 2; c++) {
+    const d = rBuf.getChannelData(c)
+    for (let i = 0; i < rLen; i++)
+      d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / rLen, 1.2)
+  }
+  reverb.buffer = rBuf
+  const reverbGain = ctx.createGain()
+  reverbGain.gain.value = 1.2
+  reverb.connect(reverbGain)
+  reverbGain.connect(ctx.destination)
+
+  // slow descending low tones, wide spacing
+  const beeps: [number, number][] = [
+    [520, 0],
+    [465, 0.3],
+    [310, 0.5],
+  ]
+  beeps.forEach(([freq, offset]) => {
+    const t = now + offset
+    const osc = ctx.createOscillator()
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(freq, t)
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.55, t + 1.8)
+
+    const gain = ctx.createGain()
+    gain.gain.setValueAtTime(0, t)
+    gain.gain.linearRampToValueAtTime(0.3, t + 0.1)
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 3.5)
+
+    osc.connect(gain)
+    gain.connect(reverb)
+    osc.start(t)
+    osc.stop(t + 2.5)
+  })
+}

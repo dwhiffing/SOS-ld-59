@@ -46,7 +46,7 @@ export function Controller({
           makeDefault
           name="playerCamera"
           position={[0, 0.18, 0]}
-          rotation={[0, Math.PI / 2, 0]}
+          rotation={[0, -Math.PI, 0]}
         />
         <PointerLockControls enabled camera={perspCamRef.current} />
       </RigidBody>
