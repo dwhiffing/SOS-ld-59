@@ -6,11 +6,10 @@ export function Menu() {
 
   return (
     <div className="menu">
-      <h1 style={{ fontSize: 48, marginBottom: 24 }}>Lightcrumbs</h1>
+      <h1 style={{ fontSize: 48, marginBottom: 24 }}>Signal</h1>
       <button
         onClick={() => setScene('game')}
-        style={{ fontSize: 18, padding: '12px 24px' }}
-      >
+        style={{ fontSize: 18, padding: '12px 24px' }}>
         Start Game
       </button>
     </div>
