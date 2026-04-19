@@ -85,7 +85,7 @@ export function Room(props: {
             meshArgs={[roomWidth, thick, roomDepth]}
             position={[0, roomHeight + halfThick, 0]}
             texturePath="floor"
-            textureScale={1}
+            textureScale={0.35}
           />
         )}
 
