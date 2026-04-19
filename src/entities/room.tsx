@@ -34,6 +34,7 @@ export function Room(props: {
   children?: React.ReactNode
   keypads?: Partial<Record<0 | 1 | 2 | 3, KeypadInfo>>
   hideCeiling?: boolean
+  exitDoor?: number
 }) {
   const world = useWorld()
   const ref = useRef<Object3D>(null)
@@ -184,6 +185,7 @@ export function Room(props: {
                 orientation="horizontal"
                 doorId={generateDoorId(roomId, 'north')}
                 keypad={makeKeypad(0)}
+                isExit={props.exitDoor === 0}
               />,
             )
           if (doors.south)
@@ -194,6 +196,7 @@ export function Room(props: {
                 orientation="horizontal"
                 doorId={generateDoorId(roomId, 'south')}
                 keypad={makeKeypad(1)}
+                isExit={props.exitDoor === 1}
               />,
             )
           if (doors.east)
@@ -204,6 +207,7 @@ export function Room(props: {
                 orientation="vertical"
                 doorId={generateDoorId(roomId, 'east')}
                 keypad={makeKeypad(2)}
+                isExit={props.exitDoor === 2}
               />,
             )
           if (doors.west)
@@ -214,6 +218,7 @@ export function Room(props: {
                 orientation="vertical"
                 doorId={generateDoorId(roomId, 'west')}
                 keypad={makeKeypad(3)}
+                isExit={props.exitDoor === 3}
               />,
             )
 

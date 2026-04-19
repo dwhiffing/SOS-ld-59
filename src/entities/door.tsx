@@ -3,7 +3,7 @@ import { animated, useSpring } from '@react-spring/three'
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import { useTraitEffect, useWorld } from 'koota/react'
 import { CanvasTexture, SRGBColorSpace } from 'three'
-import { useGameStore } from '../stores/gameStore'
+import { initialState, useGameStore } from '../stores/gameStore'
 import { NearestItem } from './controller/traits'
 import Keypad from './keypad'
 import { doorH, doorW } from './room'
@@ -15,6 +15,7 @@ interface DoorProps {
   thickness?: number
   color?: string
   doorId: string
+  isExit?: boolean
   keypad?: {
     code: string
     id: string
@@ -51,6 +52,7 @@ export const Door: React.FC<DoorProps> = ({
   orientation,
   thickness = 0.02,
   doorId,
+  isExit,
   keypad,
 }) => {
   const ref = useRef(null)
@@ -81,8 +83,13 @@ export const Door: React.FC<DoorProps> = ({
 
   useEffect(() => {
     if (!isOpen) return
-    setTimeout(() => useGameStore.getState().closeDoor(doorId), 3000)
-  }, [isOpen, doorId])
+    if (isExit) {
+      useGameStore.setState(initialState)
+      useGameStore.getState().setScene('menu')
+    } else {
+      setTimeout(() => useGameStore.getState().closeDoor(doorId), 3000)
+    }
+  }, [isOpen, doorId, isExit])
 
   const bumpMap = useMemo(() => makeDoorMap('bump'), [])
 

@@ -25,7 +25,7 @@ export interface GameState {
   resetKeypadInput: (id: string) => void
 }
 
-const initialState = {
+export const initialState = {
   lights: {},
   lockedDoors: {
     'start-room-west': true,

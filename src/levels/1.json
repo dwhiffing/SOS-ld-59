@@ -8,18 +8,6 @@
          "name":"Room Layer",
          "objects":[
                 {
-                 "gid":7,
-                 "height":16,
-                 "id":1,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":16,
-                 "x":192,
-                 "y":208
-                }, 
-                {
                  "gid":18,
                  "height":16,
                  "id":5,
@@ -32,15 +20,21 @@
                  "y":256
                 }, 
                 {
-                 "gid":19,
+                 "gid":5,
                  "height":16,
                  "id":6,
                  "name":"exit",
+                 "properties":[
+                        {
+                         "name":"exitDoor",
+                         "type":"int",
+                         "value":0
+                        }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":16,
-                 "x":176,
+                 "x":192,
                  "y":208
                 }, 
                 {
@@ -67,12 +61,12 @@
                         {
                          "name":"keypad2Code",
                          "type":"int",
-                         "value":2222
+                         "value":-1
                         }, 
                         {
                          "name":"keypad3Code",
                          "type":"int",
-                         "value":3333
+                         "value":-1
                         }, 
                         {
                          "name":"variant",
@@ -87,10 +81,65 @@
                  "y":224
                 }, 
                 {
-                 "gid":13,
+                 "gid":17,
                  "height":16,
-                 "id":8,
+                 "id":11,
                  "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":208,
+                 "y":224
+                }, 
+                {
+                 "gid":19,
+                 "height":16,
+                 "id":12,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":176,
+                 "y":224
+                }, 
+                {
+                 "gid":5,
+                 "height":16,
+                 "id":13,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"hasTerminal",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"keypad0Code",
+                         "type":"int",
+                         "value":1111
+                        }, 
+                        {
+                         "name":"keypad1Code",
+                         "type":"int",
+                         "value":-1
+                        }, 
+                        {
+                         "name":"keypad2Code",
+                         "type":"int",
+                         "value":-1
+                        }, 
+                        {
+                         "name":"keypad3Code",
+                         "type":"int",
+                         "value":-1
+                        }, 
+                        {
+                         "name":"variant",
+                         "type":"int",
+                         "value":1
+                        }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -105,7 +154,7 @@
          "y":0
         }],
  "nextlayerid":7,
- "nextobjectid":9,
+ "nextobjectid":14,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",
