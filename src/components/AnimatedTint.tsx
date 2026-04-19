@@ -1,7 +1,7 @@
 import { useSpring } from '@react-spring/three'
 import { useFrame } from '@react-three/fiber'
 import { useRef } from 'react'
-import { Color, Mesh, MeshStandardMaterial, Object3D } from 'three'
+import { type Mesh, type MeshStandardMaterial, type Object3D } from 'three'
 
 const clamp = (n: number, min: number, max: number) =>
   Math.max(min, Math.min(n, max))
@@ -18,7 +18,7 @@ export function AnimatedTint(props: { color?: string; opacity?: number }) {
     const mat = parent?.material as MeshStandardMaterial | null
     if (!mat) return
     const t = clamp(springProps.opacity.get(), 0, 1)
-    mat.emissive = new Color(props.color ?? '#fff')
+    mat.emissive.set(props.color ?? '#fff')
     mat.emissiveIntensity = t
   })
 

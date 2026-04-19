@@ -37,8 +37,7 @@ export function BaseRoom({
       keypads={keypadProp as any}
       hideCeiling={hideCeiling}
       exitDoor={exitDoor}
-      lockedDoors={lockedDoors}
-      graffiti={graffiti}>
+      lockedDoors={lockedDoors}>
       <FlickerLight position={[0, 0, 0]} intensity={20.0} defaultOn />
 
       {hasTerminal && <Terminal roomId={roomId} />}
