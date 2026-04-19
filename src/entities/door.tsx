@@ -85,9 +85,8 @@ export const Door: React.FC<DoorProps> = ({
 
   const barSpring = useSpring({
     position: isLocked ? [0, 0, 0] : [0, doorH * 1.5, 0],
-    config: isLocked
-      ? { tension: 9999, friction: 9999 } // instant snap when locking
-      : { tension: 120, friction: 120 }, // animate only when unlocking
+    immediate: isLocked,
+    config: { tension: 120, friction: 120 },
   })
 
   const args: [number, number, number] =
