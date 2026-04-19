@@ -1,5 +1,5 @@
 import { JSX, useMemo, useState } from 'react'
-import { Room1 } from './Room1'
+import { RoomVariant } from './RoomVariant'
 
 type TiledProperty = { name: string; type: string; value: number | string }
 
@@ -91,6 +91,7 @@ export function TiledMap({
           if (code != null && code !== -1)
             keypads[dir] = String(code).padStart(4, '0')
         }
+        const variantValue = getProp('variant')
         return [
           {
             obj,
@@ -100,6 +101,7 @@ export function TiledMap({
             key: `tiled-${col}-${row}`,
             keypads,
             hasTerminal: !!getProp('hasTerminal'),
+            variant: variantValue != null ? Number(variantValue) : 0,
           },
         ]
       }),
@@ -118,7 +120,7 @@ export function TiledMap({
 
   const rooms: JSX.Element[] = []
 
-  for (const { doors, key, keypads, hasTerminal } of roomObjects) {
+  for (const { doors, key, keypads, hasTerminal, variant } of roomObjects) {
     const keypadProp =
       Object.keys(keypads).length > 0
         ? Object.fromEntries(
@@ -129,13 +131,14 @@ export function TiledMap({
           )
         : undefined
     rooms.push(
-      <Room1
+      <RoomVariant
         key={key}
         position={positions[key]}
         doors={doors as [number?, number?, number?, number?]}
         roomId={key}
         keypadProp={keypadProp as any}
         hasTerminal={hasTerminal}
+        variant={variant}
       />,
     )
   }

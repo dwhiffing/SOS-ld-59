@@ -10,6 +10,8 @@ export type RoomProps = {
   keypadProp?: { [key: string]: string | number }
   doors?: [number?, number?, number?, number?]
   children?: React.ReactNode
+  hideCeiling?: boolean
+  variant?: number
 }
 export function BaseRoom({
   position,
@@ -19,6 +21,7 @@ export function BaseRoom({
   keypadProp,
   doors,
   children,
+  hideCeiling,
 }: RoomProps) {
   return (
     <Room
@@ -26,7 +29,8 @@ export function BaseRoom({
       position={position}
       doors={doors as [number?, number?, number?, number?]}
       roomId={roomId}
-      keypads={keypadProp as any}>
+      keypads={keypadProp as any}
+      hideCeiling={hideCeiling}>
       <FlickerLight position={[0, 0, 0]} intensity={20.0} defaultOn />
 
       {hasTerminal && <Terminal />}

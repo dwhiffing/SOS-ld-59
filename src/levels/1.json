@@ -1,5 +1,5 @@
 { "compressionlevel":-1,
- "height":10,
+ "height":25,
  "infinite":false,
  "layers":[
         {
@@ -16,8 +16,8 @@
                  "type":"",
                  "visible":true,
                  "width":16,
-                 "x":80,
-                 "y":64
+                 "x":192,
+                 "y":208
                 }, 
                 {
                  "gid":18,
@@ -28,8 +28,8 @@
                  "type":"",
                  "visible":true,
                  "width":16,
-                 "x":80,
-                 "y":112
+                 "x":192,
+                 "y":256
                 }, 
                 {
                  "gid":19,
@@ -40,8 +40,8 @@
                  "type":"",
                  "visible":true,
                  "width":16,
-                 "x":64,
-                 "y":64
+                 "x":176,
+                 "y":208
                 }, 
                 {
                  "gid":10,
@@ -73,13 +73,18 @@
                          "name":"keypad3Code",
                          "type":"int",
                          "value":3333
+                        }, 
+                        {
+                         "name":"variant",
+                         "type":"int",
+                         "value":1
                         }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":16,
-                 "x":80,
-                 "y":80
+                 "x":192,
+                 "y":224
                 }, 
                 {
                  "gid":13,
@@ -90,8 +95,8 @@
                  "type":"",
                  "visible":true,
                  "width":16,
-                 "x":80,
-                 "y":96
+                 "x":192,
+                 "y":240
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -109,7 +114,7 @@
         {
          "columns":10,
          "firstgid":1,
-         "image":"tiles.png",
+         "image":"..\/..\/public\/tiles.png",
          "imageheight":160,
          "imagewidth":160,
          "margin":0,
@@ -122,5 +127,5 @@
  "tilewidth":16,
  "type":"map",
  "version":"1.10",
- "width":10
+ "width":25
 }
