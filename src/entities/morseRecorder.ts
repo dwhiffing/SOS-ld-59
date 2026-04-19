@@ -98,7 +98,7 @@ export { RESPONSE_PAUSE_MS }
 
 // samples; tune relative to tap speed. 400ms at 50ms/sample = 8
 const DOT_DASH_THRESHOLD = Math.round((200 / MORSE_DURATION) * BITMAP_WIDTH)
-const LETTER_GAP_THRESHOLD = Math.round((300 / MORSE_DURATION) * BITMAP_WIDTH)
+const LETTER_GAP_THRESHOLD = Math.round((400 / MORSE_DURATION) * BITMAP_WIDTH)
 
 const MORSE_TABLE: Record<string, string> = {
   '.-': 'A',

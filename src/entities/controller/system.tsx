@@ -28,7 +28,7 @@ let initialized = false
 let _lastCamAngle: Quaternion = new Quaternion(0, 0, 0, 0)
 let _lastKeyHeld = false
 let _lastSignalVal = 0
-const AUTO_SUBMIT_MS = 1500
+const AUTO_SUBMIT_MS = 2500
 const FF_SPEED = 10
 
 function initKeyboardListeners() {
