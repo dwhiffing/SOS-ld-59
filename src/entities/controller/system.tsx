@@ -1,8 +1,22 @@
 import { type World } from 'koota'
 import { Quaternion, Raycaster, Vector3 } from 'three'
+
+// Reusable objects to avoid per-frame allocations (GC pressure)
+const _quat = new Quaternion()
+const _forwardVec = new Vector3()
+const _rightVec = new Vector3()
+const _moveVec = new Vector3()
+const _upVec = new Vector3(0, 1, 0)
+const _rayOrigin = new Vector3()
+const _rayDir = new Vector3()
+const _raycaster = new Raycaster()
+const _aPos = new Vector3()
+const _bPos = new Vector3()
+const _dPos = new Vector3()
 import { BITMAP_WIDTH, MORSE_DURATION } from '../../constants'
 import { Mesh, PhysicsBody } from '../../shared/traits'
 import useGameStore from '../../stores/gameStore'
+import { setMusicMuted } from '../ambience'
 import { keypadsInError } from '../keypad'
 import {
   decodeMorse,
@@ -10,7 +24,6 @@ import {
   morse,
   RESPONSE_PAUSE_MS,
 } from '../morseRecorder'
-import { setMusicMuted } from '../ambience'
 import {
   playDoorLockedClick,
   playKeypad,
@@ -27,11 +40,13 @@ import { Controllable, NearestItem } from './traits'
 let keys = new Set<string>()
 let justPressed = new Set<string>()
 let initialized = false
-let _lastCamAngle: Quaternion = new Quaternion(0, 0, 0, 0)
+
+let _lastCamAngle: Quaternion = new Quaternion()
 let _lastKeyHeld = false
 let _lastSignalVal = 0
 const AUTO_SUBMIT_MS = 2500
 const FF_SPEED = 10
+export const playerPos = { x: 0, y: 0, z: 0 }
 
 function initKeyboardListeners() {
   if (initialized) return
@@ -236,17 +251,14 @@ function useDoor(world: World, nearest: any) {
   }
   const store = useGameStore.getState()
 
-  const dPos = new Vector3()
-  nearest?.mesh.getWorldPosition?.(dPos)
+  nearest?.mesh.getWorldPosition?.(_dPos)
   const door = world.entities
     .flatMap((e) => e.get(Mesh)?.getObjectsByProperty?.('name', 'door'))
     .filter((d) => d && d.userData.doorId !== nearest?.mesh.userData.doorId)
     .sort((a, b) => {
-      const aPos = new Vector3()
-      a?.getWorldPosition?.(aPos)
-      const bPos = new Vector3()
-      b?.getWorldPosition?.(bPos)
-      return aPos.distanceTo(dPos) - bPos.distanceTo(dPos)
+      a?.getWorldPosition?.(_aPos)
+      b?.getWorldPosition?.(_bPos)
+      return _aPos.distanceTo(_dPos) - _bPos.distanceTo(_dPos)
     })[0]
 
   if (door) store.openDoor(door.userData.doorId, true)
@@ -262,35 +274,47 @@ function moveEntities(world: World, now: number) {
     const mesh = entity.get(Mesh) as any
     const cam = mesh.getObjectByName?.('playerCamera', true)
 
-    const quat = new Quaternion()
-    cam?.getWorldQuaternion?.(quat)
+    cam?.getWorldQuaternion?.(_quat)
 
-    const forwardVec = new Vector3(0, 0, -1).applyQuaternion(quat)
-    const rightVec = new Vector3().copy(forwardVec).cross(new Vector3(0, 1, 0))
+    _forwardVec.set(0, 0, -1).applyQuaternion(_quat)
+    _rightVec.copy(_forwardVec).cross(_upVec)
 
-    const move = new Vector3()
-      .addScaledVector(forwardVec, forwardKey - backKey)
-      .addScaledVector(rightVec, rightKey - leftKey)
-    if (move.lengthSq() > 0) move.normalize()
+    _moveVec
+      .set(0, 0, 0)
+      .addScaledVector(_forwardVec, forwardKey - backKey)
+      .addScaledVector(_rightVec, rightKey - leftKey)
+    if (_moveVec.lengthSq() > 0) _moveVec.normalize()
 
     const phys = entity.get(PhysicsBody)?.api as any
     const speed = 1.05
-    phys.current.setLinvel({ x: move.x * speed, y: 0, z: move.z * speed }, true)
-    tickFootstep(move.lengthSq() > 0, now)
+    phys.current.setLinvel(
+      { x: _moveVec.x * speed, y: 0, z: _moveVec.z * speed },
+      true,
+    )
+    tickFootstep(_moveVec.lengthSq() > 0, now)
 
-    const dot = Math.abs(_lastCamAngle.dot(quat))
+    const translation = phys?.current?.translation?.()
+    if (translation) {
+      playerPos.x = translation.x
+      playerPos.y = translation.y
+      playerPos.z = translation.z
+    }
+
+    const dot = Math.abs(_lastCamAngle.dot(_quat))
     const angle = Math.acos(Math.max(-1, Math.min(1, dot)))
-    _lastCamAngle = quat
-    if (angle > 0.0005 || move.lengthSq() > 0) {
+    _lastCamAngle.copy(_quat)
+    if (angle > 0.0005 || _moveVec.lengthSq() > 0) {
       computeAndSetNearest(world, cam)
     }
   }
 }
 
+const MAX_INTERACT_DIST = Math.sqrt(0.5)
+
 const computeAndSetNearest = (world: World, camera: any) => {
   let best: { entity: any; mesh: any; distance: number } | null = null
   const raycaster = getRaycaster(camera)
-  const maxDist = Math.sqrt(0.5)
+  const maxDist = MAX_INTERACT_DIST
 
   for (const e of world.entities) {
     const mesh = e.get(Mesh) as any
@@ -325,9 +349,8 @@ const computeAndSetNearest = (world: World, camera: any) => {
 }
 
 const getRaycaster = (cam: any) => {
-  const origin = new Vector3()
-  cam?.getWorldPosition?.(origin)
-  const dir = new Vector3()
-  cam?.getWorldDirection?.(dir)
-  return new Raycaster(origin, dir)
+  cam?.getWorldPosition?.(_rayOrigin)
+  cam?.getWorldDirection?.(_rayDir)
+  _raycaster.set(_rayOrigin, _rayDir)
+  return _raycaster
 }
