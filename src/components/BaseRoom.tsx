@@ -14,6 +14,7 @@ export type RoomProps = {
   variant?: number
   exitDoor?: number
   lockedDoors?: Partial<Record<0 | 1 | 2 | 3, boolean>>
+  graffiti?: Partial<Record<0 | 1 | 2 | 3, string>>
 }
 export function BaseRoom({
   position,
@@ -26,6 +27,7 @@ export function BaseRoom({
   hideCeiling,
   exitDoor,
   lockedDoors,
+  graffiti,
 }: RoomProps) {
   return (
     <Room
@@ -36,7 +38,8 @@ export function BaseRoom({
       keypads={keypadProp as any}
       hideCeiling={hideCeiling}
       exitDoor={exitDoor}
-      lockedDoors={lockedDoors}>
+      lockedDoors={lockedDoors}
+      graffiti={graffiti}>
       <FlickerLight position={[0, 0, 0]} intensity={20.0} defaultOn />
 
       {hasTerminal && <Terminal roomId={roomId} />}

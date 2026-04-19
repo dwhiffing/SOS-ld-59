@@ -164,6 +164,11 @@
                          "value":1
                         }, 
                         {
+                         "name":"graffiti3",
+                         "type":"string",
+                         "value":"___ .__. . _."
+                        }, 
+                        {
                          "name":"hasTerminal",
                          "type":"bool",
                          "value":true
