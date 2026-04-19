@@ -83,9 +83,16 @@ export function BaseRoom({
       visibleRef={isNearRef}>
       <group ref={groupRef} visible={isNearRef.current}>
         {mountedCount >= 1 && (
-          <FlickerLight position={[0, 0, 0]} intensity={20.0} defaultOn />
+          <FlickerLight
+            position={[0, 0, 0]}
+            intensity={20.0}
+            defaultOn
+            // morseCode="...---"
+          />
         )}
-        {mountedCount >= 2 && hasTerminal && <Terminal roomId={roomId} roomName={roomName} />}
+        {mountedCount >= 2 && hasTerminal && (
+          <Terminal roomId={roomId} roomName={roomName} />
+        )}
         {childArrayRef.current.slice(0, mountedCount - fixedCount)}
       </group>
     </Room>

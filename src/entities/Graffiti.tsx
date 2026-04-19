@@ -118,7 +118,7 @@ function GraffitiPlane({
   return (
     <mesh position={position} rotation={rotation} scale={scale}>
       <planeGeometry args={[1.2, 0.28]} />
-      <meshBasicMaterial map={tex} transparent alphaTest={0.05} />
+      <meshStandardMaterial map={tex} transparent alphaTest={0.05} roughness={1} metalness={0} />
     </mesh>
   )
 }

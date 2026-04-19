@@ -23,7 +23,7 @@ export function DebugLevel() {
 
         <TiledMap map={mapData as TiledMapData} />
       </Physics>
-      <ambientLight intensity={1} />
+      {/* <ambientLight intensity={1} /> */}
     </>
   )
 }
