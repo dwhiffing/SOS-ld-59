@@ -1,14 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { Preload } from '@react-three/drei'
+import { PerformanceMonitor, Preload } from '@react-three/drei'
 import { DebugLevel } from '../levels/debug'
 import { KootaSystems } from '../providers'
 import useGameStore, { type SoundMode } from '../stores/gameStore'
 
 export function Game() {
+  const [dpr, setDpr] = useState(1.5)
   return (
     <div className="game">
-      <Canvas shadows>
+      <Canvas dpr={dpr} shadows frameloop="demand">
+        <PerformanceMonitor
+          onIncline={() => setDpr(2)}
+          onDecline={() => setDpr(1)}></PerformanceMonitor>
         <Preload all />
         <KootaSystems>
           <DebugLevel />
