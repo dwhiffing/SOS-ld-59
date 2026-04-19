@@ -1,19 +1,79 @@
-import { useRef } from 'react'
-import { type Object3D } from 'three'
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
+import { useRef } from 'react'
+import { CanvasTexture, type Object3D, SRGBColorSpace } from 'three'
 
-const WOOD_COLOR = '#2a1e10'
-const INSET_COLOR = '#302416'
+function makeCrateTextures() {
+  const size = 256
+  const b = Math.floor(size * 0.12) // border plank width
+  const g = 2 // groove thickness
 
-// Inset panel on each of the 6 faces
-const FACES = [
-  { pos: [0, 0, 1] as const, rot: [0, 0, 0] as const },
-  { pos: [0, 0, -1] as const, rot: [0, Math.PI, 0] as const },
-  { pos: [1, 0, 0] as const, rot: [0, Math.PI / 2, 0] as const },
-  { pos: [-1, 0, 0] as const, rot: [0, -Math.PI / 2, 0] as const },
-  { pos: [0, 1, 0] as const, rot: [-Math.PI / 2, 0, 0] as const },
-  { pos: [0, -1, 0] as const, rot: [Math.PI / 2, 0, 0] as const },
-]
+  // --- color map ---
+  const cc = document.createElement('canvas')
+  cc.width = cc.height = size
+  const ctx = cc.getContext('2d')!
+
+  // center panel — medium wood
+  ctx.fillStyle = '#372711'
+  ctx.fillRect(0, 0, size, size)
+
+  // border planks — slightly lighter
+  ctx.fillStyle = '#2f1d06'
+  ctx.fillRect(0, 0, size, b) // top
+  ctx.fillRect(0, size - b, size, b) // bottom
+  ctx.fillRect(0, b, b, size - b * 2) // left
+  ctx.fillRect(size - b, b, b, size - b * 2) // right
+
+  // grooves — dark gap between planks and panel
+  ctx.fillStyle = '#372712'
+  ctx.fillRect(b - g, 0, g * 2, size) // left groove
+  ctx.fillRect(size - b - g, 0, g * 2, size) // right groove
+  ctx.fillRect(0, b - g, size, g * 2) // top groove
+  ctx.fillRect(0, size - b - g, size, g * 2) // bottom groove
+
+  // wood grain lines across entire face
+  ctx.globalAlpha = 0.06
+  for (let i = 0; i < 12; i++) {
+    const y = (size / 12) * i + Math.random() * 8
+    ctx.strokeStyle = '#000'
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.moveTo(0, y)
+    ctx.lineTo(size, y + (Math.random() - 0.5) * 4)
+    ctx.stroke()
+  }
+  ctx.globalAlpha = 1
+
+  const colorMap = new CanvasTexture(cc)
+  colorMap.colorSpace = SRGBColorSpace
+
+  // --- bump map ---
+  const bc = document.createElement('canvas')
+  bc.width = bc.height = size
+  const bctx = bc.getContext('2d')!
+
+  bctx.fillStyle = '#888'
+  bctx.fillRect(0, 0, size, size)
+
+  // border planks raised
+  bctx.fillStyle = '#bbb'
+  bctx.fillRect(0, 0, size, b)
+  bctx.fillRect(0, size - b, size, b)
+  bctx.fillRect(0, b, b, size - b * 2)
+  bctx.fillRect(size - b, b, b, size - b * 2)
+
+  // grooves depressed
+  bctx.fillStyle = '#222'
+  bctx.fillRect(b - g, 0, g * 2, size)
+  bctx.fillRect(size - b - g, 0, g * 2, size)
+  bctx.fillRect(0, b - g, size, g * 2)
+  bctx.fillRect(0, size - b - g, size, g * 2)
+
+  const bumpMap = new CanvasTexture(bc)
+
+  return { colorMap, bumpMap }
+}
+
+const { colorMap: _crateColorMap, bumpMap: _crateBumpMap } = makeCrateTextures()
 
 function Crate({
   position,
@@ -22,43 +82,17 @@ function Crate({
   position: [number, number, number]
   s: number
 }) {
-  const b = s * 0.12
-  const inner = s - b * 2
-  const t = s * 0.02
-  const d = s * 0.5 + t * 0.5
-
-  // planks in face-local XY space
-  const planks: [number, number, number, number][] = [
-    [0, s * 0.5 - b * 0.5, s, b],
-    [0, -(s * 0.5 - b * 0.5), s, b],
-    [-(s * 0.5 - b * 0.5), 0, b, inner],
-    [s * 0.5 - b * 0.5, 0, b, inner],
-  ]
-
   return (
-    <group position={position}>
-      <mesh castShadow receiveShadow>
-        <boxGeometry args={[s, s, s]} />
-        <meshStandardMaterial color={WOOD_COLOR} roughness={1} metalness={0} />
-      </mesh>
-      {FACES.map(({ pos, rot }, i) => (
-        <group
-          key={i}
-          position={[pos[0] * d, pos[1] * d, pos[2] * d]}
-          rotation={rot}>
-          {planks.map(([x, y, w, h], j) => (
-            <mesh key={j} position={[x, y, 0]}>
-              <boxGeometry args={[w, h, t]} />
-              <meshStandardMaterial
-                color={INSET_COLOR}
-                roughness={1}
-                metalness={0}
-              />
-            </mesh>
-          ))}
-        </group>
-      ))}
-    </group>
+    <mesh castShadow receiveShadow position={position}>
+      <boxGeometry args={[s, s, s]} />
+      <meshStandardMaterial
+        map={_crateColorMap}
+        bumpMap={_crateBumpMap}
+        bumpScale={0.06}
+        roughness={1}
+        metalness={0}
+      />
+    </mesh>
   )
 }
 
