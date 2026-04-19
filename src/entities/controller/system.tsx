@@ -29,6 +29,7 @@ import {
   playKeypad,
   playMorseHi,
   playMorseLo,
+  resumeAudioContext,
   setSfxMuted,
   startStatic,
   stopStatic,
@@ -55,6 +56,7 @@ function initKeyboardListeners() {
   if (typeof window === 'undefined') return
 
   window.addEventListener('keydown', (e) => {
+    resumeAudioContext()
     keys.add(e.key.toLowerCase())
     if (!e.repeat) justPressed.add(e.key.toLowerCase())
   })

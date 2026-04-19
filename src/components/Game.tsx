@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useThree } from '@react-three/fiber'
+// Compiles all shaders (including from initially-hidden rooms) before first frame
+function ShaderWarmup() {
+  const { gl, scene, camera } = useThree()
+  useEffect(() => {
+    gl.compileAsync(scene, camera).catch(() => {})
+  }, [])
+  return null
+}
 import { PerformanceMonitor, Preload } from '@react-three/drei'
 import { DebugLevel } from '../levels/debug'
 import { KootaSystems } from '../providers'
@@ -9,11 +17,16 @@ export function Game() {
   const [dpr, setDpr] = useState(1.5)
   return (
     <div className="game">
-      <Canvas dpr={dpr} shadows frameloop="demand">
+      {/* <Canvas dpr={dpr} shadows frameloop="demand"> */}
+      <Canvas dpr={dpr} shadows>
         <PerformanceMonitor
+          iterations={10}
+          threshold={0.75}
+          flipflops={4}
           onIncline={() => setDpr(2)}
-          onDecline={() => setDpr(1)}></PerformanceMonitor>
+          onDecline={() => setDpr(1)} />
         <Preload all />
+        <ShaderWarmup />
         <KootaSystems>
           <DebugLevel />
         </KootaSystems>

@@ -8,6 +8,10 @@ export function setSfxMuted(muted: boolean) {
   sfxMaster.gain.value = muted ? 0 : 1
 }
 
+export function resumeAudioContext() {
+  if (ctx.state === 'suspended') ctx.resume()
+}
+
 function playDoor(duration: number, thudGain: number, scrapeGain: number) {
   const rate = ctx.sampleRate
   const len = Math.floor(rate * duration)
@@ -69,31 +73,38 @@ function playDoor(duration: number, thudGain: number, scrapeGain: number) {
 let lastStepTime = 0
 const STEP_INTERVAL_MS = 500
 
+// Pre-bake footstep buffers and a persistent filter chain to avoid per-step allocations
+const STEP_POOL_SIZE = 8
+const _stepBuffers: AudioBuffer[] = (() => {
+  const rate = ctx.sampleRate
+  const len = Math.floor(rate * 0.05)
+  return Array.from({ length: STEP_POOL_SIZE }, () => {
+    const buf = ctx.createBuffer(1, len, rate)
+    const data = buf.getChannelData(0)
+    for (let i = 0; i < len; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 6)
+    }
+    return buf
+  })
+})()
+let _stepPoolIdx = 0
+
+const _stepFilter = ctx.createBiquadFilter()
+_stepFilter.type = 'lowpass'
+_stepFilter.frequency.value = 200
+const _stepGain = ctx.createGain()
+_stepGain.gain.value = 0.9
+_stepFilter.connect(_stepGain)
+_stepGain.connect(sfxMaster)
+
 export function tickFootstep(isMoving: boolean, now: number) {
   if (!isMoving || now - lastStepTime < STEP_INTERVAL_MS) return
   lastStepTime = now
 
-  const rate = ctx.sampleRate
-  const len = Math.floor(rate * 0.05)
-  const buffer = ctx.createBuffer(1, len, rate)
-  const data = buffer.getChannelData(0)
-  for (let i = 0; i < len; i++) {
-    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 6)
-  }
-
   const source = ctx.createBufferSource()
-  source.buffer = buffer
-
-  const filter = ctx.createBiquadFilter()
-  filter.type = 'lowpass'
-  filter.frequency.value = 200
-
-  const gain = ctx.createGain()
-  gain.gain.value = 0.9
-
-  source.connect(filter)
-  filter.connect(gain)
-  gain.connect(sfxMaster)
+  source.buffer = _stepBuffers[_stepPoolIdx % STEP_POOL_SIZE]
+  _stepPoolIdx++
+  source.connect(_stepFilter)
   source.start()
 }
 
