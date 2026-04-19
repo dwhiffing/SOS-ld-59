@@ -3,6 +3,7 @@ import useGameStore from './stores/gameStore'
 import Game from './components/Game'
 import Menu from './components/Menu'
 import { initTerminalSearch } from './entities/terminalSearch'
+import { startAmbience, stopAmbience } from './entities/ambience'
 // @ts-expect-error css import
 import './index.css'
 
@@ -20,6 +21,8 @@ export function App() {
     lastTarget.current = targetScene
 
     setIsFading(true)
+    if (targetScene === 'game') startAmbience()
+    else stopAmbience()
 
     const toBlack = window.setTimeout(() => {
       setCurrentScene(targetScene)
