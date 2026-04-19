@@ -17,7 +17,7 @@
                  "visible":true,
                  "width":16,
                  "x":192,
-                 "y":256
+                 "y":272
                 }, 
                 {
                  "gid":5,
@@ -146,6 +146,54 @@
                  "width":16,
                  "x":192,
                  "y":240
+                }, 
+                {
+                 "gid":5,
+                 "height":16,
+                 "id":14,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"door0Locked",
+                         "type":"int",
+                         "value":1
+                        }, 
+                        {
+                         "name":"hasTerminal",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"keypad0Code",
+                         "type":"int",
+                         "value":-1
+                        }, 
+                        {
+                         "name":"keypad1Code",
+                         "type":"int",
+                         "value":-1
+                        }, 
+                        {
+                         "name":"keypad2Code",
+                         "type":"int",
+                         "value":-1
+                        }, 
+                        {
+                         "name":"keypad3Code",
+                         "type":"int",
+                         "value":-1
+                        }, 
+                        {
+                         "name":"variant",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":192,
+                 "y":256
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -154,7 +202,7 @@
          "y":0
         }],
  "nextlayerid":7,
- "nextobjectid":14,
+ "nextobjectid":15,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",

@@ -10,13 +10,15 @@ export type MorsePhase =
 export const morse = {
   phase: 'idle' as MorsePhase,
   startTime: 0,
-  signal: new Uint8Array(BITMAP_WIDTH),
+  signal: new Uint8Array(BITMAP_WIDTH) as Uint8Array<ArrayBufferLike>,
   playhead: 0,
   doneTime: 0,
   lastInputTime: 0,
   ffStart: 0, // time fast-forward began (0 = not fast-forwarding)
-  ffBase: 0,  // playhead position when fast-forward began
+  ffBase: 0, // playhead position when fast-forward began
   keyHeld: false,
+  responseSignal: null as Uint8Array<ArrayBufferLike> | null, // set async before startResponse fires
+  terminalRoomId: '',
 }
 
 const RESPONSE_PAUSE_MS = 1000

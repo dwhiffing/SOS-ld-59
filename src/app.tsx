@@ -2,8 +2,11 @@ import React, { useEffect, useRef, useState } from 'react'
 import useGameStore from './stores/gameStore'
 import Game from './components/Game'
 import Menu from './components/Menu'
-// @ts-expect-error yes
+import { initTerminalSearch } from './entities/terminalSearch'
+// @ts-expect-error css import
 import './index.css'
+
+initTerminalSearch()
 
 export function App() {
   const targetScene = useGameStore((s) => s.scene)

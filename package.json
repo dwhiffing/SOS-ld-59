@@ -8,6 +8,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@huggingface/transformers": "^4.1.0",
     "@react-spring/three": "^10.0.3",
     "@react-three/drei": "^10.0.6",
     "@react-three/fiber": "^9.1.2",

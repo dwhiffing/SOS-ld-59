@@ -15,6 +15,7 @@ export interface GameState {
   setScene: (scene: 'menu' | 'game') => void
   resetGame: () => void
   toggleLight: (id: string) => void
+  initDoor: (doorId: string, locked: boolean) => void
   unlockDoor: (doorId: string) => void
   openDoor: (doorId: string, force?: boolean) => void
   closeDoor: (doorId: string) => void
@@ -27,9 +28,7 @@ export interface GameState {
 
 export const initialState = {
   lights: {},
-  lockedDoors: {
-    'start-room-west': true,
-  },
+  lockedDoors: {} as Record<string, boolean>,
   openDoors: {},
   keypads: {} as Record<string, KeypadData>,
   scene: 'game' as 'menu' | 'game',
@@ -37,8 +36,13 @@ export const initialState = {
 
 export const useGameStore = create<GameState>((set, get) => ({
   ...initialState,
-  unlockDoor: (doorId: string) =>
-    set((s) => ({ lockedDoors: { ...s.lockedDoors, [doorId]: false } })),
+  initDoor: (doorId: string, locked: boolean) => {
+    if (locked)
+      set((s) => ({ lockedDoors: { ...s.lockedDoors, [doorId]: true } }))
+  },
+  unlockDoor: (doorId: string) => {
+    set((s) => ({ lockedDoors: { ...s.lockedDoors, [doorId]: false } }))
+  },
   openDoor: (doorId: string, force = false) => {
     if (get().lockedDoors[doorId] && !force) return
     set((s) => ({ openDoors: { ...s.openDoors, [doorId]: true } }))

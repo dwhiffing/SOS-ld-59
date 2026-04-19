@@ -35,6 +35,7 @@ export function Room(props: {
   keypads?: Partial<Record<0 | 1 | 2 | 3, KeypadInfo>>
   hideCeiling?: boolean
   exitDoor?: number
+  lockedDoors?: Partial<Record<0 | 1 | 2 | 3, boolean>>
 }) {
   const world = useWorld()
   const ref = useRef<Object3D>(null)
@@ -186,6 +187,7 @@ export function Room(props: {
                 doorId={generateDoorId(roomId, 'north')}
                 keypad={makeKeypad(0)}
                 isExit={props.exitDoor === 0}
+                locked={props.lockedDoors?.[0]}
               />,
             )
           if (doors.south)
@@ -197,6 +199,7 @@ export function Room(props: {
                 doorId={generateDoorId(roomId, 'south')}
                 keypad={makeKeypad(1)}
                 isExit={props.exitDoor === 1}
+                locked={props.lockedDoors?.[1]}
               />,
             )
           if (doors.east)
@@ -208,6 +211,7 @@ export function Room(props: {
                 doorId={generateDoorId(roomId, 'east')}
                 keypad={makeKeypad(2)}
                 isExit={props.exitDoor === 2}
+                locked={props.lockedDoors?.[2]}
               />,
             )
           if (doors.west)
@@ -219,6 +223,7 @@ export function Room(props: {
                 doorId={generateDoorId(roomId, 'west')}
                 keypad={makeKeypad(3)}
                 isExit={props.exitDoor === 3}
+                locked={props.lockedDoors?.[3]}
               />,
             )
 

@@ -3,7 +3,13 @@ import { Quaternion, Raycaster, Vector3 } from 'three'
 import { BITMAP_WIDTH, MORSE_DURATION } from '../../constants'
 import { Mesh, PhysicsBody } from '../../shared/traits'
 import useGameStore from '../../stores/gameStore'
-import { HELLO_SIGNAL, morse, RESPONSE_PAUSE_MS } from '../morseRecorder'
+import {
+  decodeMorse,
+  encodeResponse,
+  morse,
+  RESPONSE_PAUSE_MS,
+} from '../morseRecorder'
+import { queryTerminal, terminalSearchReady } from '../terminalSearch'
 import { Controllable, NearestItem } from './traits'
 
 let keys = new Set<string>()
@@ -42,6 +48,7 @@ export const controllerInputSystem = (world: World, _delta: number) => {
     if (nearestName === 'keypad-btn') {
       useKeypad(nearest)
     } else if (nearestName === 'terminal') {
+      morse.terminalRoomId = nearest.mesh.userData.roomId ?? ''
       startRecording(now)
     } else if (nearestName === 'door') {
       useDoor(world, nearest)
@@ -72,7 +79,7 @@ function updateMorseState(now: number) {
       advanceRecording(now)
     }
   } else if (morse.phase === 'done') {
-    if (now - morse.doneTime >= RESPONSE_PAUSE_MS) {
+    if (now - morse.doneTime >= RESPONSE_PAUSE_MS && morse.responseSignal) {
       startResponse(now)
     }
   } else if (morse.phase === 'responding') {
@@ -92,6 +99,7 @@ function startRecording(now: number) {
   morse.startTime = now
   morse.lastInputTime = now
   morse.ffStart = 0
+  morse.responseSignal = null
 }
 
 function cancelRecording() {
@@ -105,7 +113,8 @@ function cancelRecording() {
 
 function startResponse(now: number) {
   morse.phase = 'responding'
-  morse.signal = HELLO_SIGNAL
+  morse.signal = morse.responseSignal!
+  morse.responseSignal = null
   morse.playhead = 0
   morse.startTime = now
   morse.ffStart = 0
@@ -139,7 +148,18 @@ function advanceRecording(now: number) {
   if (newPlayhead >= BITMAP_WIDTH) {
     morse.phase = 'done'
     morse.doneTime = now
+    resolveResponse(morse.signal, morse.terminalRoomId)
   }
+}
+
+async function resolveResponse(signal: Uint8Array, roomId: string) {
+  const letters = decodeMorse(signal, signal.length)
+  const query = letters.map((l) => l.char).join('')
+  const { response: responseText, entry } = terminalSearchReady
+    ? await queryTerminal(query)
+    : { response: 'LOADING', entry: null }
+  entry?.sideEffect?.(roomId)
+  morse.responseSignal = encodeResponse(responseText)
 }
 
 function advanceResponse(now: number) {
@@ -163,6 +183,8 @@ function useDoor(world: World, nearest: any) {
   if (!id) return
 
   useGameStore.getState().openDoor(id)
+  if (!useGameStore.getState().isDoorOpen(id)) return
+  const store = useGameStore.getState()
 
   const dPos = new Vector3()
   nearest?.mesh.getWorldPosition?.(dPos)
@@ -177,7 +199,7 @@ function useDoor(world: World, nearest: any) {
       return aPos.distanceTo(dPos) - bPos.distanceTo(dPos)
     })[0]
 
-  if (door) useGameStore.getState().openDoor(door.userData.doorId, true)
+  if (door) store.openDoor(door.userData.doorId, true)
 }
 
 function moveEntities(world: World) {

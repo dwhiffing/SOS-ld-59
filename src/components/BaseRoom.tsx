@@ -13,6 +13,7 @@ export type RoomProps = {
   hideCeiling?: boolean
   variant?: number
   exitDoor?: number
+  lockedDoors?: Partial<Record<0 | 1 | 2 | 3, boolean>>
 }
 export function BaseRoom({
   position,
@@ -24,6 +25,7 @@ export function BaseRoom({
   children,
   hideCeiling,
   exitDoor,
+  lockedDoors,
 }: RoomProps) {
   return (
     <Room
@@ -33,10 +35,11 @@ export function BaseRoom({
       roomId={roomId}
       keypads={keypadProp as any}
       hideCeiling={hideCeiling}
-      exitDoor={exitDoor}>
+      exitDoor={exitDoor}
+      lockedDoors={lockedDoors}>
       <FlickerLight position={[0, 0, 0]} intensity={20.0} defaultOn />
 
-      {hasTerminal && <Terminal />}
+      {hasTerminal && <Terminal roomId={roomId} />}
       {children}
     </Room>
   )

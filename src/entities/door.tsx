@@ -16,6 +16,7 @@ interface DoorProps {
   color?: string
   doorId: string
   isExit?: boolean
+  locked?: boolean
   keypad?: {
     code: string
     id: string
@@ -53,6 +54,7 @@ export const Door: React.FC<DoorProps> = ({
   thickness = 0.02,
   doorId,
   isExit,
+  locked,
   keypad,
 }) => {
   const ref = useRef(null)
@@ -90,6 +92,10 @@ export const Door: React.FC<DoorProps> = ({
       setTimeout(() => useGameStore.getState().closeDoor(doorId), 3000)
     }
   }, [isOpen, doorId, isExit])
+
+  useEffect(() => {
+    useGameStore.getState().initDoor(doorId, locked ?? false)
+  }, [doorId])
 
   const bumpMap = useMemo(() => makeDoorMap('bump'), [])
 
