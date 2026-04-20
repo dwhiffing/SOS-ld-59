@@ -2,6 +2,7 @@ export interface QAEntry {
   phrases: string[]
   response: string | string[] // string = single message; array = play in sequence; side effect fires after last
   threshold?: number // overrides global SIMILARITY_THRESHOLD if set
+  default?: boolean // used as fallback response when no query matches
   sideEffect?: (roomId: string) => void
 }
 
@@ -23,7 +24,8 @@ export const ROOM_KNOWLEDGE: Record<string, QAEntry[]> = {
   default: [],
   '1': [
     {
-      phrases: ['SOS', 'E', 'T', 'A', 'N', 'Y'],
+      phrases: ['SOS'],
+      default: true,
       response: 'HELLO',
       sideEffect: (roomId) => {
         const store = useGameStore.getState()
@@ -33,7 +35,8 @@ export const ROOM_KNOWLEDGE: Record<string, QAEntry[]> = {
   ],
   '2': [
     {
-      phrases: ['SOS', 'DOOR', 'HELP', 'E', 'T', 'A'],
+      phrases: ['SOS', 'DOOR', 'HELP'],
+      default: true,
       response: 'OPEN DOOR?',
     },
     {
@@ -47,7 +50,8 @@ export const ROOM_KNOWLEDGE: Record<string, QAEntry[]> = {
   ],
   '3': [
     {
-      phrases: ['SOS', 'DOOR', 'HELP', 'E', 'T', 'A', 'BCL'],
+      phrases: ['SOS', 'DOOR', 'HELP'],
+      default: true,
       response: 'WHAT IS HERE?',
     },
     {
@@ -92,13 +96,15 @@ export const ROOM_KNOWLEDGE: Record<string, QAEntry[]> = {
   ],
   '4': [
     {
-      phrases: ['SOS', 'DOOR', 'HELP', 'E', 'T', 'A'],
+      phrases: ['SOS', 'DOOR', 'HELP'],
+      default: true,
       response: ['CODE IS A', 'SECRET', 'DIGITS DESCEND'],
     },
   ],
   exit: [
     {
-      phrases: ['SOS', 'DOOR', 'HELP', 'E', 'T', 'A'],
+      phrases: ['SOS', 'DOOR', 'HELP'],
+      default: true,
       response: ['WHAT IS MY', 'NAME'],
     },
     {

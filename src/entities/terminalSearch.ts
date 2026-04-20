@@ -76,6 +76,11 @@ export async function queryTerminal(
     return { responses: pickResponse(bestEntry.response), entry: bestEntry }
   }
 
+  const defaultEntry = embeddings.find(({ entry }) => entry.default)?.entry ?? null
+  if (defaultEntry) {
+    return { responses: pickResponse(defaultEntry.response), entry: defaultEntry }
+  }
+
   return { responses: [], entry: null }
 }
 
