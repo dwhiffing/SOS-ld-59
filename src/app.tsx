@@ -1,19 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react'
-import useGameStore from './stores/gameStore'
 import Game from './components/Game'
 import Menu from './components/Menu'
-import { initTerminalSearch } from './entities/terminalSearch'
 import {
   startAmbience,
-  stopAmbience,
   startMenuHowl,
+  stopAmbience,
   stopMenuHowl,
 } from './entities/ambience'
 import { setMusicMuted } from './entities/ambience'
 import { playGameStart, setSfxMuted } from './entities/sounds'
+import useGameStore from './stores/gameStore'
 import './index.css'
-
-initTerminalSearch()
 
 // Apply persisted sound mode on load
 {

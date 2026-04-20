@@ -35,7 +35,7 @@ import {
   stopStatic,
   tickFootstep,
 } from '../sounds'
-import { queryTerminal, terminalSearchReady } from '../terminalSearch'
+import { queryTerminal } from '../terminalSearch'
 import { Controllable, NearestItem } from './traits'
 
 let keys = new Set<string>()
@@ -407,9 +407,7 @@ async function resolveResponse(
 ) {
   const letters = decodeMorse(signal, signal.length)
   const query = letters.map((l) => l.char).join('')
-  const { responses, entry } = terminalSearchReady
-    ? await queryTerminal(query, roomName)
-    : { responses: ['LOADING'], entry: null }
+  const { responses, entry } = queryTerminal(query, roomName)
   morse.pendingSideEffect = entry?.sideEffect
     ? () => entry.sideEffect!(roomId)
     : null
