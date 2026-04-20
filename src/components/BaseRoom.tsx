@@ -23,7 +23,7 @@ export type RoomProps = {
   graffiti?: Partial<Record<0 | 1 | 2 | 3, string>>
 }
 
-const VISIBILITY_THRESHOLD = 2.0
+const VISIBILITY_THRESHOLD = 3.0
 function checkNear(position: [number, number, number]) {
   const dx = playerPos.x - position[0] * 2
   const dz = playerPos.z - position[2] * 2
