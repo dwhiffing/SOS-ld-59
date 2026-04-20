@@ -16,6 +16,8 @@
       touch-action: none;
       user-select: none;
       -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
     #root {
@@ -42,6 +44,7 @@
 <body>
   <div id="loading">LOADING</div>
   <div id="root"></div>
+  <script>window.addEventListener('contextmenu', e => e.preventDefault())</script>
   <script type="module" src="./src/index.tsx"></script>
 </body>
 

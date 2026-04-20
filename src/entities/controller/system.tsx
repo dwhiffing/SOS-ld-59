@@ -75,6 +75,9 @@ function initTouchListeners() {
   window.addEventListener(
     'touchstart',
     (e) => {
+      const target = e.target as HTMLElement
+      if (target.closest('button, a, .menu')) return
+      e.preventDefault()
       resumeAudioContext()
       const now = performance.now()
 
@@ -176,6 +179,7 @@ function initTouchListeners() {
     },
     { passive: false },
   )
+
 }
 
 function initKeyboardListeners() {
