@@ -135,6 +135,7 @@ export function Map({ hideCeiling = false }) {
           position={[-0.67, 0.69, 0.91]}
           rotation={[0, Math.PI, 0]}
           dropDistance={0.5}
+          roomPosition={[0, 0, 2]}
         />
       </BaseRoom>
 
@@ -271,6 +272,7 @@ export function Map({ hideCeiling = false }) {
           rotation={[0, Math.PI, 0]}
           dropDistance={0.5}
           morseCode="...--"
+          roomPosition={[1, 0, 4]}
         />
       </BaseRoom>
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { playerPos } from './controller/system'
 import {
   CylinderGeometry,
   SphereGeometry,
@@ -77,16 +78,38 @@ function buildMorseSequence(morse: string): [boolean, number][] {
   return seq
 }
 
+let audioCtx: AudioContext | null = null
+
+function playDripSound() {
+  if (!audioCtx) audioCtx = new AudioContext()
+  const ctx = audioCtx
+  const osc = ctx.createOscillator()
+  const gain = ctx.createGain()
+  osc.connect(gain)
+  gain.connect(ctx.destination)
+  osc.type = 'sine'
+  osc.frequency.setValueAtTime(900, ctx.currentTime)
+  osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.08)
+  gain.gain.setValueAtTime(0.18, ctx.currentTime)
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12)
+  osc.start(ctx.currentTime)
+  osc.stop(ctx.currentTime + 0.12)
+}
+
+const SOUND_THRESHOLD = 2.0
+
 export function DrippingPipe({
   position = [0, 0, 0],
   rotation = [0, 0, 0],
   dropDistance = 100,
   morseCode,
+  roomPosition,
 }: {
   position?: [number, number, number]
   rotation?: [number, number, number]
   dropDistance?: number
   morseCode?: string
+  roomPosition?: [number, number, number]
 }) {
   const dropRef = useRef<ThreeMesh | null>(null)
 
@@ -140,6 +163,13 @@ export function DrippingPipe({
     if (!shouldDrip && prevShouldDripRef.current) {
       droppingRef.current = true
       dropYRef.current = TIP_Y
+      if (roomPosition) {
+        const dx = playerPos.x - roomPosition[0] * 2
+        const dz = playerPos.z - roomPosition[2] * 2
+        if (dx * dx + dz * dz < SOUND_THRESHOLD * SOUND_THRESHOLD) playDripSound()
+      } else {
+        playDripSound()
+      }
     }
     prevShouldDripRef.current = shouldDrip
 
