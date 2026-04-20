@@ -40,7 +40,7 @@ export function Barrel({
         {/* Top cap */}
         <mesh position={[0, size * 0.9 + h / 2, 0]}>
           <cylinderGeometry args={[r * 0.9, r, 0.001, 15]} />
-          <meshStandardMaterial color="#000" roughness={1} metalness={0} />
+          <meshStandardMaterial color="#000" roughness={0} metalness={0} />
         </mesh>
 
         {/* Metal bands */}

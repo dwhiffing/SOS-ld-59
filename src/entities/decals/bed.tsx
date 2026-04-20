@@ -8,7 +8,7 @@ const PILLOW_COLOR = '#5a4a62'
 
 export function Bed({
   position = [0, 0, 0],
-  size = 0.2,
+  size = 0.28,
   rotation = [0, 0, 0],
 }: {
   position?: [number, number, number]

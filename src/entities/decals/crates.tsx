@@ -75,15 +75,17 @@ function makeCrateTextures() {
 
 const { colorMap: _crateColorMap, bumpMap: _crateBumpMap } = makeCrateTextures()
 
-function Crate({
+export function Crate({
   position,
-  s,
+  rotation = [0, 0, 0],
+  s = 0.4 * 0.55,
 }: {
   position: [number, number, number]
-  s: number
+  rotation?: [number, number, number]
+  s?: number
 }) {
   return (
-    <mesh castShadow receiveShadow position={position}>
+    <mesh castShadow receiveShadow position={position} rotation={rotation}>
       <boxGeometry args={[s, s, s]} />
       <meshStandardMaterial
         map={_crateColorMap}

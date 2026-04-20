@@ -193,8 +193,13 @@ export function Terminal({
           position[0],
           position[1] + (TERMINAL_TABLE_HEIGHT - 0.025),
           position[2],
-        ]}>
-        <mesh ref={ref} name="terminal" visible={false} userData={{ roomId, roomName }}>
+        ]}
+        rotation={[0, Math.PI / 2, 0]}>
+        <mesh
+          ref={ref}
+          name="terminal"
+          visible={false}
+          userData={{ roomId, roomName }}>
           <boxGeometry args={size} />
         </mesh>
 
