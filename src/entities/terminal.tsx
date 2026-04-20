@@ -157,14 +157,15 @@ export function Terminal({
     if (!canvas || !tex) return
     const ctx = canvas.getContext('2d')!
 
-    const isActive = morse.terminalRoomId === roomId
-    if (isActive && morse.phase !== 'idle') {
+    const isMyRoom = morse.terminalRoomId === roomId
+    const isActive = isMyRoom && morse.phase !== 'idle'
+    if (isActive) {
       if (morse.playhead !== lastPlayheadRef.current) {
         lastPlayheadRef.current = morse.playhead
         draw(ctx, BITMAP_WIDTH, BITMAP_HEIGHT)
         tex.needsUpdate = true
       }
-    } else if (lastPlayheadRef.current !== -1) {
+    } else if (!isMyRoom && lastPlayheadRef.current !== -1) {
       lastPlayheadRef.current = -1
       draw(ctx, BITMAP_WIDTH, BITMAP_HEIGHT)
       tex.needsUpdate = true

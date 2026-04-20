@@ -16,6 +16,7 @@ export interface GameState {
   openDoors: Record<string, boolean>
   keypads: Record<string, KeypadData>
   scene: 'menu' | 'game'
+  things: Record<string, boolean>
   setScene: (scene: 'menu' | 'game') => void
   resetGame: () => void
   toggleLight: (id: string) => void
@@ -41,6 +42,7 @@ function loadSoundMode(): SoundMode {
 }
 
 export const initialState = {
+  things: { bed: false, chair: false, table: false },
   lights: {},
   lockedDoors: {} as Record<string, boolean>,
   openDoors: {},

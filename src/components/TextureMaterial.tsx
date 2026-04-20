@@ -1,7 +1,4 @@
-import { useTexture } from '@react-three/drei'
-import { useThree } from '@react-three/fiber'
-import { useEffect } from 'react'
-import { BoxGeometry, BufferAttribute, RepeatWrapping } from 'three'
+import { BoxGeometry, BufferAttribute } from 'three'
 
 export const TextureMaterial = ({
   path,
@@ -10,39 +7,7 @@ export const TextureMaterial = ({
   path: string
   color?: string
 }) => {
-  const { gl } = useThree()
-  const [colorMap] = useTexture([
-    `./${path}/diff.jpg`,
-    // `./${path}/dx.jpg`,
-    // `./${path}/rough.jpg`,
-    // `./${path}/ao.jpg`,
-  ])
-  colorMap.wrapS = RepeatWrapping
-  colorMap.wrapT = RepeatWrapping
-  // normalMap.wrapS = RepeatWrapping
-  // normalMap.wrapT = RepeatWrapping
-  // roughnessMap.wrapS = RepeatWrapping
-  // roughnessMap.wrapT = RepeatWrapping
-  // aoMap.wrapS = RepeatWrapping
-  // aoMap.wrapT = RepeatWrapping
-
-  // Pre-upload textures to GPU immediately so the first render doesn't spike
-  useEffect(() => {
-    gl.initTexture(colorMap)
-    // gl.initTexture(normalMap)
-    // gl.initTexture(roughnessMap)
-    // gl.initTexture(aoMap)
-  }, [gl, colorMap])
-
-  return (
-    <meshStandardMaterial
-      // map={colorMap}
-      // normalMap={normalMap}
-      // roughnessMap={roughnessMap}
-      // aoMap={aoMap}
-      color={color}
-    />
-  )
+  return <meshStandardMaterial color={color} />
 }
 
 export const getBoxGeometry = (

@@ -45,8 +45,8 @@ let initialized = false
 let _lastCamAngle: Quaternion = new Quaternion()
 let _lastKeyHeld = false
 let _lastSignalVal = 0
-const AUTO_SUBMIT_MS = 2500
-const FF_SPEED = 10
+const AUTO_SUBMIT_MS = 2000
+const FF_SPEED = 15
 export const playerPos = { x: 0, y: 0, z: 0 }
 
 function initKeyboardListeners() {
@@ -64,12 +64,36 @@ function initKeyboardListeners() {
   window.addEventListener('keyup', (e) => {
     keys.delete(e.key.toLowerCase())
   })
+
+  window.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return
+    resumeAudioContext()
+    keys.add(' ')
+  })
+
+  window.addEventListener('mouseup', (e) => {
+    if (e.button !== 0) return
+    keys.delete(' ')
+  })
+
+  window.addEventListener('click', (e) => {
+    if (e.button !== 0) return
+    justPressed.add(' ')
+  })
 }
 
 export const controllerInputSystem = (world: World, _delta: number) => {
   initKeyboardListeners()
 
   const now = performance.now()
+
+  if (morse.phase === 'recording') {
+    const nearest = world.get(NearestItem) as any
+    const nearestRoomId = nearest?.mesh?.userData?.roomId
+    if (nearestRoomId !== morse.terminalRoomId) {
+      cancelRecording(true)
+    }
+  }
 
   updateMorseState(now)
 
@@ -110,10 +134,12 @@ export const controllerInputSystem = (world: World, _delta: number) => {
     } else if (nearestName === 'terminal') {
       const newRoomId = nearest.mesh.userData.roomId ?? ''
       const isDifferent = newRoomId !== morse.terminalRoomId
-      if (morse.phase === 'idle' || (isDifferent && morse.phase !== 'recording')) {
+      if (
+        morse.phase === 'idle' ||
+        (isDifferent && morse.phase !== 'recording')
+      ) {
         morse.terminalRoomId = newRoomId
-        morse.terminalRoomName =
-          nearest.mesh.userData.roomName ?? newRoomId
+        morse.terminalRoomName = nearest.mesh.userData.roomName ?? newRoomId
         startRecording(now)
       }
     } else if (nearestName === 'door') {
@@ -140,7 +166,7 @@ function playheadAt(start: number, now: number, speed = 1) {
 function updateMorseState(now: number) {
   if (morse.phase === 'recording') {
     if (justPressed.has('r')) {
-      cancelRecording()
+      cancelRecording(true)
     } else {
       advanceRecording(now)
     }
@@ -150,12 +176,14 @@ function updateMorseState(now: number) {
     }
   } else if (morse.phase === 'responding') {
     if (justPressed.has('r')) {
-      cancelRecording()
+      morse.pendingSideEffect?.()
+      morse.pendingSideEffect = null
+      cancelRecording(true)
     } else {
       advanceResponse(now)
     }
   } else if (morse.phase === 'responded') {
-    cancelRecording()
+    cancelRecording(false)
   }
 }
 
@@ -170,13 +198,14 @@ function startRecording(now: number) {
   morse.responseSignal = null
 }
 
-function cancelRecording() {
+function cancelRecording(clearRoom = false) {
   morse.phase = 'idle'
   morse.keyHeld = false
   morse.signal = new Uint8Array(BITMAP_WIDTH)
   morse.playhead = 0
   morse.startTime = 0
   morse.ffStart = 0
+  if (clearRoom) morse.terminalRoomId = ''
 }
 
 function startResponse(now: number) {
@@ -186,6 +215,7 @@ function startResponse(now: number) {
   morse.playhead = 0
   morse.startTime = now
   morse.ffStart = 0
+  morse.ffBase = 0
 }
 
 function advanceRecording(now: number) {
@@ -216,26 +246,59 @@ function advanceRecording(now: number) {
   if (newPlayhead >= BITMAP_WIDTH) {
     morse.phase = 'done'
     morse.doneTime = now
-    resolveResponse(morse.signal, morse.terminalRoomName)
+    resolveResponse(morse.signal, morse.terminalRoomName, morse.terminalRoomId)
   }
 }
 
-async function resolveResponse(signal: Uint8Array, roomName: string) {
+async function resolveResponse(
+  signal: Uint8Array,
+  roomName: string,
+  roomId: string,
+) {
   const letters = decodeMorse(signal, signal.length)
   const query = letters.map((l) => l.char).join('')
-  const { response: responseText, entry } = terminalSearchReady
+  const { responses, entry } = terminalSearchReady
     ? await queryTerminal(query, roomName)
-    : { response: 'LOADING', entry: null }
-  entry?.sideEffect?.(roomName)
-  morse.responseSignal = encodeResponse(responseText)
+    : { responses: ['LOADING'], entry: null }
+  morse.pendingSideEffect = entry?.sideEffect
+    ? () => entry.sideEffect!(roomId)
+    : null
+  morse.responseQueue = responses.slice(1)
+  morse.responseSignal = encodeResponse(responses[0])
 }
 
 function advanceResponse(now: number) {
-  const newPlayhead = playheadAt(morse.startTime, now, 2)
+  const normalPlayhead = playheadAt(morse.startTime, now, 2)
+
+  if (!morse.ffStart && normalPlayhead >= morse.responseSignalEnd) {
+    morse.ffStart = now
+    morse.ffBase = normalPlayhead
+  }
+
+  const newPlayhead = morse.ffStart
+    ? Math.min(
+        morse.ffBase +
+          Math.floor(
+            FF_SPEED * ((now - morse.ffStart) / MORSE_DURATION) * BITMAP_WIDTH,
+          ),
+        BITMAP_WIDTH,
+      )
+    : normalPlayhead
 
   if (newPlayhead !== morse.playhead) morse.playhead = newPlayhead
   if (newPlayhead >= BITMAP_WIDTH) {
-    morse.phase = 'responded'
+    const next = morse.responseQueue.shift()
+    if (next) {
+      morse.signal = encodeResponse(next)
+      morse.playhead = 0
+      morse.startTime = performance.now()
+      morse.ffStart = 0
+      morse.ffBase = 0
+    } else {
+      morse.phase = 'responded'
+      morse.pendingSideEffect?.()
+      morse.pendingSideEffect = null
+    }
   }
 }
 

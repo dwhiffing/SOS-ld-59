@@ -1,6 +1,6 @@
 export interface QAEntry {
   phrases: string[]
-  response: string | string[] // array = pick one randomly; keep short — encoded as morse
+  response: string | string[] // string = single message; array = play in sequence; side effect fires after last
   threshold?: number // overrides global SIMILARITY_THRESHOLD if set
   sideEffect?: (roomId: string) => void
 }
@@ -14,38 +14,87 @@ function getRoomDoorIds(roomId: string) {
 
 export const GENERIC_KNOWLEDGE: QAEntry[] = [
   {
-    phrases: ['who', 'what you', 'identify', 'name'],
-    response: 'UNIT 4',
-  },
-  {
-    phrases: ['help', 'what do', 'instructions', 'proceed'],
-    response: 'FIND KEY',
+    phrases: ['where', 'what place', 'location', 'place'],
+    response: 'UNDERGROUND',
   },
 ]
 
 export const ROOM_KNOWLEDGE: Record<string, QAEntry[]> = {
-  default: [
+  default: [],
+  '1': [
     {
-      phrases: ['where', 'what place', 'location', 'place'],
-      response: 'SECTOR 7',
+      phrases: ['SOS'],
+      response: 'HELLO',
+      sideEffect: (roomId) => {
+        const store = useGameStore.getState()
+        console.log(roomId, getRoomDoorIds(roomId))
+        getRoomDoorIds(roomId).forEach((id) => store.unlockDoor(id))
+      },
+    },
+  ],
+  '2': [
+    {
+      phrases: ['SOS', 'DOOR', 'HELP'],
+      response: 'OPEN DOOR?',
     },
     {
-      phrases: ['escape', 'exit', 'way out'],
-      response: 'NORTH DOOR',
-    },
-    {
-      phrases: ['open'],
-      response: 'OKAY',
+      phrases: ['OPEN', 'YES'],
+      response: ['MY NAME IS', 'QUINCY'],
       sideEffect: (roomId) => {
         const store = useGameStore.getState()
         getRoomDoorIds(roomId).forEach((id) => store.unlockDoor(id))
       },
     },
   ],
-  '1': [
+  '3': [
     {
-      phrases: ['e'],
-      response: 'YES',
+      phrases: ['SOS', 'DOOR', 'HELP'],
+      response: 'WHAT IS HERE?',
+    },
+    {
+      phrases: ['BED'],
+      response: 'GOOD',
+      sideEffect: (roomId) => {
+        let things = useGameStore.getState().things
+        useGameStore.setState({ things: { ...things, bed: true } })
+        things = useGameStore.getState().things
+        if (things.bed && things.chair && things.table) {
+          const store = useGameStore.getState()
+          getRoomDoorIds(roomId).forEach((id) => store.unlockDoor(id))
+        }
+      },
+    },
+    {
+      phrases: ['CHAIR'],
+      response: 'GOOD',
+      sideEffect: (roomId) => {
+        let things = useGameStore.getState().things
+        useGameStore.setState({ things: { ...things, chair: true } })
+        things = useGameStore.getState().things
+        if (things.bed && things.chair && things.table) {
+          const store = useGameStore.getState()
+          getRoomDoorIds(roomId).forEach((id) => store.unlockDoor(id))
+        }
+      },
+    },
+    {
+      phrases: ['TABLE'],
+      response: 'GOOD',
+      sideEffect: (roomId) => {
+        let things = useGameStore.getState().things
+        useGameStore.setState({ things: { ...things, table: true } })
+        things = useGameStore.getState().things
+        if (things.bed && things.chair && things.table) {
+          const store = useGameStore.getState()
+          getRoomDoorIds(roomId).forEach((id) => store.unlockDoor(id))
+        }
+      },
+    },
+  ],
+  '4': [
+    {
+      phrases: ['SOS', 'DOOR', 'HELP'],
+      response: 'CODE SECRET DIGITS DESCEND',
     },
   ],
 }

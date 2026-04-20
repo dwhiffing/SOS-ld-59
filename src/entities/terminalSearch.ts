@@ -48,23 +48,17 @@ async function getEmbeddingsForRoom(roomName: string) {
   return embeddings
 }
 
-function pickResponse(response: string | string[]): string {
-  if (Array.isArray(response)) {
-    return response[Math.floor(Math.random() * response.length)]
-  }
-  return response
+function pickResponse(response: string | string[]): string[] {
+  if (Array.isArray(response)) return response
+  return [response]
 }
 
-type QueryResult = { response: string; entry: QAEntry | null }
+type QueryResult = { responses: string[]; entry: QAEntry | null }
 
 export async function queryTerminal(
   input: string,
   roomName: string,
 ): Promise<QueryResult> {
-  if (!ready || !extractor) {
-    return { response: 'LOADING', entry: null }
-  }
-
   const queryVec = await embed(input.toLowerCase().trim())
   const embeddings = await getEmbeddingsForRoom(roomName)
 
@@ -83,23 +77,12 @@ export async function queryTerminal(
 
   const threshold = bestEntry?.threshold ?? SIMILARITY_THRESHOLD
   if (bestEntry && bestScore >= threshold) {
-    return { response: pickResponse(bestEntry.response), entry: bestEntry }
+    return { responses: pickResponse(bestEntry.response), entry: bestEntry }
   }
 
   const fallback =
     FALLBACK_RESPONSES[Math.floor(Math.random() * FALLBACK_RESPONSES.length)]
-  return { response: fallback, entry: null }
+  return { responses: [fallback], entry: null }
 }
 
 export { ready as terminalSearchReady }
-
-declare global {
-  interface Window {
-    askTerminal: (query: string, roomName?: string) => Promise<void>
-  }
-}
-
-window.askTerminal = async (query: string, roomName = 'default') => {
-  const { response } = await queryTerminal(query, roomName)
-  console.log(`Q: "${query}" [room: ${roomName}] → "${response}"`)
-}

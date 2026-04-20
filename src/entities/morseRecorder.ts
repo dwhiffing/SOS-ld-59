@@ -20,6 +20,9 @@ export const morse = {
   responseSignal: null as Uint8Array<ArrayBufferLike> | null, // set async before startResponse fires
   terminalRoomId: '',
   terminalRoomName: '',
+  pendingSideEffect: null as (() => void) | null,
+  responseSignalEnd: 0, // pixel index where signal content ends
+  responseQueue: [] as string[], // remaining messages to play after current
 }
 
 const RESPONSE_PAUSE_MS = 1000
@@ -65,6 +68,7 @@ const CHAR_TO_MORSE: Record<string, string> = {
   '7': '--...',
   '8': '---..',
   '9': '----.',
+  '?': '..--..',
 }
 
 const RESPONSE_LEAD_PX = 20 // blank pixels before signal starts
@@ -90,6 +94,12 @@ export function encodeResponse(text: string): Uint8Array<ArrayBuffer> {
       fill(1, code[ei] === '-' ? DASH_MS : DOT_MS)
     }
   }
+
+  let end = 0
+  for (let i = signal.length - 1; i >= 0; i--) {
+    if (signal[i] !== 0) { end = i + 1; break }
+  }
+  morse.responseSignalEnd = end
 
   return signal
 }

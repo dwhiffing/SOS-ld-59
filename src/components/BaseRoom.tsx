@@ -75,7 +75,16 @@ export function BaseRoom({
       position={position}
       doors={doors as [number?, number?, number?, number?]}
       roomId={roomId}
-      keypads={keypadProp as any}
+      keypads={
+        keypadProp
+          ? Object.fromEntries(
+              Object.entries(keypadProp).map(([dir, code]) => [
+                dir,
+                { code: String(code), id: `${roomId}-keypad-${dir}` },
+              ]),
+            )
+          : undefined
+      }
       hideCeiling={hideCeiling}
       exitDoor={exitDoor}
       lockedDoors={lockedDoors}
