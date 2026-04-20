@@ -45,7 +45,7 @@ let initialized = false
 let _lastCamAngle: Quaternion = new Quaternion()
 let _lastKeyHeld = false
 let _lastSignalVal = 0
-const AUTO_SUBMIT_MS = 2000
+const AUTO_SUBMIT_MS = 3000
 const FF_SPEED = 15
 export const playerPos = { x: 0, y: 0, z: 0 }
 
@@ -101,7 +101,7 @@ export const controllerInputSystem = (world: World, _delta: number) => {
   if (isActive) {
     if (morse.phase === 'responding') startStatic()
     if (morse.phase === 'recording') {
-      if (morse.keyHeld && !_lastKeyHeld) playMorseHi()
+      if (morse.keyHeld && !_lastKeyHeld && !morse.justStarted) playMorseHi()
       else if (!morse.keyHeld && _lastKeyHeld) playMorseLo()
       _lastKeyHeld = morse.keyHeld
     } else {
@@ -196,6 +196,7 @@ function startRecording(now: number) {
   morse.lastInputTime = now
   morse.ffStart = 0
   morse.responseSignal = null
+  morse.justStarted = true
 }
 
 function cancelRecording(clearRoom = false) {
@@ -221,7 +222,9 @@ function startResponse(now: number) {
 function advanceRecording(now: number) {
   const isHigh = keys.has(' ')
   morse.keyHeld = isHigh
-  if (isHigh) morse.lastInputTime = now
+  if (!isHigh) morse.justStarted = false
+  const signalHigh = isHigh && !morse.justStarted
+  if (signalHigh) morse.lastInputTime = now
 
   const silent = !morse.ffStart && now - morse.lastInputTime >= AUTO_SUBMIT_MS
   if (silent) {
@@ -240,7 +243,7 @@ function advanceRecording(now: number) {
     : playheadAt(morse.startTime, now)
 
   for (let x = morse.playhead; x < newPlayhead; x++) {
-    morse.signal[x] = isHigh ? 1 : 0
+    morse.signal[x] = signalHigh ? 1 : 0
   }
   morse.playhead = newPlayhead
   if (newPlayhead >= BITMAP_WIDTH) {

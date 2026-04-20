@@ -47,6 +47,7 @@ export function BaseRoom({
   const groupRef = useRef<Group>(null)
   const isNearRef = useRef(checkNear(position))
   const [mountedCount, setMountedCount] = useState(0)
+  // const [mountedCount, setMountedCount] = useState(1000)
 
   // Snapshot children array once at mount — Room1/Room2 children are always stable
   const childArrayRef = useRef(React.Children.toArray(children))
@@ -65,6 +66,7 @@ export function BaseRoom({
 
   useFrame(() => {
     const next = checkNear(position)
+    // const next = true || checkNear(position)
     if (next !== isNearRef.current) {
       isNearRef.current = next
       if (groupRef.current) groupRef.current.visible = next
@@ -103,6 +105,7 @@ export function BaseRoom({
         {mountedCount >= 2 && hasTerminal && (
           <Terminal roomId={roomId} roomName={roomName} />
         )}
+        {/* {childArrayRef.current} */}
         {childArrayRef.current.slice(0, mountedCount - fixedCount)}
       </group>
     </Room>

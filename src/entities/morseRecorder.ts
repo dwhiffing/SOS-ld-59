@@ -17,6 +17,7 @@ export const morse = {
   ffStart: 0, // time fast-forward began (0 = not fast-forwarding)
   ffBase: 0, // playhead position when fast-forward began
   keyHeld: false,
+  justStarted: false, // suppress hi note on the press that triggered recording
   responseSignal: null as Uint8Array<ArrayBufferLike> | null, // set async before startResponse fires
   terminalRoomId: '',
   terminalRoomName: '',
@@ -27,7 +28,7 @@ export const morse = {
 
 const RESPONSE_PAUSE_MS = 1000
 const DOT_MS = 75
-const DASH_MS = 250
+const DASH_MS = 200
 const ELEM_GAP_MS = 100
 const LETTER_GAP_MS = 500
 
@@ -84,6 +85,8 @@ export function encodeResponse(text: string): Uint8Array<ArrayBuffer> {
       signal[pixel++] = val
   }
 
+  if (!text) return signal
+
   const chars = text.toUpperCase().split('')
   for (let ci = 0; ci < chars.length; ci++) {
     const code = CHAR_TO_MORSE[chars[ci]]
@@ -111,8 +114,8 @@ export const HELLO_SIGNAL = encodeResponse('HELLO')
 export { RESPONSE_PAUSE_MS }
 
 // samples; tune relative to tap speed. 400ms at 50ms/sample = 8
-const DOT_DASH_THRESHOLD = Math.round((250 / MORSE_DURATION) * BITMAP_WIDTH)
-const LETTER_GAP_THRESHOLD = Math.round((400 / MORSE_DURATION) * BITMAP_WIDTH)
+const DOT_DASH_THRESHOLD = Math.round((200 / MORSE_DURATION) * BITMAP_WIDTH)
+const LETTER_GAP_THRESHOLD = Math.round((500 / MORSE_DURATION) * BITMAP_WIDTH)
 
 const MORSE_TABLE: Record<string, string> = {
   '.-': 'A',

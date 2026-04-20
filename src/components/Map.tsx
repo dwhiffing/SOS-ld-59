@@ -94,9 +94,9 @@ export function Map({ hideCeiling = false }) {
         <Barrel position={[0.32, 0, 0.78]} />
         <Graffiti
           text="... --- ..."
-          position={[-0.86, 0.45, -0.0199999999999999]}
+          position={[-0.86, 0.34, -0.0199999999999999]}
           rotation={[-1.2246467991473532e-16, 1.5707963267948966, 0]}
-          scale={[0.53, 0.52, 1]}
+          scale={[0.53, 0.3, 1]}
         />
       </BaseRoom>
 
@@ -127,7 +127,7 @@ export function Map({ hideCeiling = false }) {
         <Barrel position={[-0.48, 0, -0.54]} />
         <Graffiti
           text="-.. --- --- .-."
-          position={[-0.86, 0.45, -0.0199999999999999]}
+          position={[-0.86, 0.34, -0.0199999999999999]}
           rotation={[-1.2246467991473532e-16, 1.5707963267948966, 0]}
           scale={[0.53, 0.52, 1]}
         />
@@ -182,7 +182,7 @@ export function Map({ hideCeiling = false }) {
 
         <Graffiti
           text="-... -.-. ._.."
-          position={[-0.86, 0.45, 0.37]}
+          position={[-0.86, 0.34, 0.37]}
           rotation={[-1.2246467991473532e-16, 1.5707963267948966, 0]}
           scale={[0.53, 0.52, 1]}
         />
@@ -288,7 +288,7 @@ export function Map({ hideCeiling = false }) {
         morseCode="..---">
         <Graffiti
           text="....-"
-          position={[-0.86, 0.45, -0.0199999999999999]}
+          position={[-0.86, 0.34, -0.0199999999999999]}
           rotation={[-1.2246467991473532e-16, 1.5707963267948966, 0]}
           scale={[0.53, 0.52, 1]}
         />

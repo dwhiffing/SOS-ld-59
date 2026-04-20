@@ -1,12 +1,8 @@
 import { pipeline, cos_sim } from '@huggingface/transformers'
-import {
-  FALLBACK_RESPONSES,
-  getKnowledgeForRoom,
-  type QAEntry,
-} from '../data/terminalKnowledge'
+import { getKnowledgeForRoom, type QAEntry } from '../data/terminalKnowledge'
 
 const MODEL = 'Xenova/all-MiniLM-L6-v2'
-const SIMILARITY_THRESHOLD = 0.6
+const SIMILARITY_THRESHOLD = 0.4
 
 type Extractor = Awaited<ReturnType<typeof pipeline<'feature-extraction'>>>
 type Embedding = number[]
@@ -80,9 +76,7 @@ export async function queryTerminal(
     return { responses: pickResponse(bestEntry.response), entry: bestEntry }
   }
 
-  const fallback =
-    FALLBACK_RESPONSES[Math.floor(Math.random() * FALLBACK_RESPONSES.length)]
-  return { responses: [fallback], entry: null }
+  return { responses: [], entry: null }
 }
 
 export { ready as terminalSearchReady }

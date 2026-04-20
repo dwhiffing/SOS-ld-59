@@ -195,7 +195,7 @@ export function Terminal({
           position[1] + (TERMINAL_TABLE_HEIGHT - 0.025),
           position[2],
         ]}
-        rotation={[0, Math.PI / 2, 0]}>
+        rotation={[0, 0, 0]}>
         <mesh
           ref={ref}
           name="terminal"

@@ -23,7 +23,7 @@ export const ROOM_KNOWLEDGE: Record<string, QAEntry[]> = {
   default: [],
   '1': [
     {
-      phrases: ['SOS'],
+      phrases: ['SOS', 'E', 'T', 'A', 'N', 'Y'],
       response: 'HELLO',
       sideEffect: (roomId) => {
         const store = useGameStore.getState()
@@ -33,11 +33,11 @@ export const ROOM_KNOWLEDGE: Record<string, QAEntry[]> = {
   ],
   '2': [
     {
-      phrases: ['SOS', 'DOOR', 'HELP'],
+      phrases: ['SOS', 'DOOR', 'HELP', 'E', 'T', 'A'],
       response: 'OPEN DOOR?',
     },
     {
-      phrases: ['OPEN', 'YES'],
+      phrases: ['OPEN', 'YES', 'GO', 'OUT'],
       response: ['MY NAME IS', 'QUINCY'],
       sideEffect: (roomId) => {
         const store = useGameStore.getState()
@@ -47,7 +47,7 @@ export const ROOM_KNOWLEDGE: Record<string, QAEntry[]> = {
   ],
   '3': [
     {
-      phrases: ['SOS', 'DOOR', 'HELP'],
+      phrases: ['SOS', 'DOOR', 'HELP', 'E', 'T', 'A', 'BCL'],
       response: 'WHAT IS HERE?',
     },
     {
@@ -92,13 +92,13 @@ export const ROOM_KNOWLEDGE: Record<string, QAEntry[]> = {
   ],
   '4': [
     {
-      phrases: ['SOS', 'DOOR', 'HELP'],
+      phrases: ['SOS', 'DOOR', 'HELP', 'E', 'T', 'A'],
       response: ['CODE IS A', 'SECRET', 'DIGITS DESCEND'],
     },
   ],
   exit: [
     {
-      phrases: ['SOS', 'HELP'],
+      phrases: ['SOS', 'DOOR', 'HELP', 'E', 'T', 'A'],
       response: ['WHAT IS MY', 'NAME'],
     },
     {
@@ -117,11 +117,3 @@ export function getKnowledgeForRoom(roomName: string): QAEntry[] {
     ROOM_KNOWLEDGE[roomName] ?? ROOM_KNOWLEDGE['default'] ?? []
   return [...GENERIC_KNOWLEDGE, ...roomEntries]
 }
-
-export const FALLBACK_RESPONSES = [
-  'NO DATA',
-  'UNKNOWN',
-  'ERROR',
-  'NOT FOUND',
-  'QUERY FAIL',
-]

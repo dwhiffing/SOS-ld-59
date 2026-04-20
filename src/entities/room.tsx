@@ -213,6 +213,7 @@ export function Room(props: {
   }, [])
 
   const [mountedCount, setMountedCount] = useState(0)
+  // const [mountedCount, setMountedCount] = useState(1000)
 
   useEffect(() => {
     const cleanups = Array.from({ length: parts.length }, () =>
