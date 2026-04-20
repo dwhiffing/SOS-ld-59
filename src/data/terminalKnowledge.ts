@@ -27,7 +27,6 @@ export const ROOM_KNOWLEDGE: Record<string, QAEntry[]> = {
       response: 'HELLO',
       sideEffect: (roomId) => {
         const store = useGameStore.getState()
-        console.log(roomId, getRoomDoorIds(roomId))
         getRoomDoorIds(roomId).forEach((id) => store.unlockDoor(id))
       },
     },
@@ -94,7 +93,21 @@ export const ROOM_KNOWLEDGE: Record<string, QAEntry[]> = {
   '4': [
     {
       phrases: ['SOS', 'DOOR', 'HELP'],
-      response: 'CODE SECRET DIGITS DESCEND',
+      response: ['CODE IS A', 'SECRET', 'DIGITS DESCEND'],
+    },
+  ],
+  exit: [
+    {
+      phrases: ['SOS', 'HELP'],
+      response: ['WHAT IS MY', 'NAME'],
+    },
+    {
+      phrases: ['QUINCY'],
+      response: ['GOODBYE'],
+      sideEffect: (roomId) => {
+        const store = useGameStore.getState()
+        getRoomDoorIds(roomId).forEach((id) => store.unlockDoor(id))
+      },
     },
   ],
 }

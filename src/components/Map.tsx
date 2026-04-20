@@ -2,7 +2,9 @@ import { BaseRoom } from '../components/BaseRoom'
 import {
   BigRockWithPebbles,
   CornerBoulder,
+  Rock,
   RockCluster,
+  RockFloor,
 } from '../entities/Boulders'
 import Barrel from '../entities/decals/barrel'
 import Bed from '../entities/decals/bed'
@@ -133,7 +135,6 @@ export function Map({ hideCeiling = false }) {
           position={[-0.67, 0.69, 0.91]}
           rotation={[0, Math.PI, 0]}
           dropDistance={0.5}
-          morseCode=".--."
         />
       </BaseRoom>
 
@@ -194,8 +195,36 @@ export function Map({ hideCeiling = false }) {
         doors={[0, 1, 2, 3]}
         hasTerminal
         lockedDoors={{}}
-        keypadProp={{ 0: '1111' }}
-        hideCeiling={hideCeiling}></BaseRoom>
+        keypadProp={{ 0: '7432' }}
+        hideCeiling={hideCeiling}>
+        <BigRockWithPebbles
+          position={[0.6, 0, -0.56]}
+          rotation={[
+            -1.0713924103386291e-16, -0.7679448708775002,
+            -4.7133422090918787e-17,
+          ]}
+          scale={[1.02, 0.96, 0.97]}
+        />
+        <CornerBoulder
+          position={[-0.59, 0, -0.64]}
+          rotation={[
+            -1.6320386899589952e-16, 0.8901179185171124, 1.825988625068656e-16,
+          ]}
+          scale={[0.8, 0.96, 0.94]}
+        />
+        <CornerBoulder
+          position={[-0.65, -6.19587516135744e-17, 0.57]}
+          rotation={[3.141592653589793, 0.6457718232379016, -3.141592653589793]}
+          scale={[0.77, 1.09, 0.79]}
+        />
+        <CornerBoulder
+          position={[
+            0.620956406977153, 1.69682889018729e-16, 0.631516540269551,
+          ]}
+          rotation={[3.141592653589793, -1.1868238913561442, 3.141592653589793]}
+          scale={[0.79, 0.96, 0.63]}
+        />
+      </BaseRoom>
 
       {/* room 5 - dead-end west */}
       <BaseRoom
@@ -205,7 +234,45 @@ export function Map({ hideCeiling = false }) {
         doors={[3]}
         hasTerminal={false}
         lockedDoors={{}}
-        hideCeiling={hideCeiling}></BaseRoom>
+        hideCeiling={hideCeiling}>
+        <Sign
+          position={[-0.68, 0, 0.61]}
+          rotation={[0, -1.1693705988362006, 0]}
+        />
+        <Rock
+          position={[0.57, 0.04, -0.24]}
+          scale={[0.29, 0.28, 0.27]}
+          rotation={[3.141592653589793, -0.5410520681182422, 3.141592653589793]}
+        />
+        <Rock
+          position={[0.6, 0.04, -0.58]}
+          scale={[0.29, 0.28, 0.27]}
+          rotation={[0, -0.9075712110370515, 0]}
+        />
+        <Rock
+          position={[0.56, 0.04, 0.57]}
+          scale={[0.16, 0.11, 0.13]}
+          rotation={[0, -0.9075712110370515, 0]}
+        />
+        <Rock
+          position={[0.62, 0.04, 0.27]}
+          scale={[0.16, 0.11, 0.13]}
+          rotation={[
+            3.141592653589793, -0.38397243543875265, 3.141592653589793,
+          ]}
+        />
+        <Rock
+          position={[0.55, 0.04, 0.0199999999999996]}
+          scale={[0.16, 0.11, 0.13]}
+          rotation={[0, -0.9075712110370515, 0]}
+        />
+        <DrippingPipe
+          position={[-0.67, 0.69, 0.91]}
+          rotation={[0, Math.PI, 0]}
+          dropDistance={0.5}
+          morseCode="...--"
+        />
+      </BaseRoom>
 
       {/* room 4 - dead-end east */}
       <BaseRoom
@@ -215,7 +282,54 @@ export function Map({ hideCeiling = false }) {
         doors={[2]}
         hasTerminal={false}
         lockedDoors={{}}
-        hideCeiling={hideCeiling}></BaseRoom>
+        hideCeiling={hideCeiling}
+        morseCode="..---">
+        <Graffiti
+          text="....-"
+          position={[-0.86, 0.45, -0.0199999999999999]}
+          rotation={[-1.2246467991473532e-16, 1.5707963267948966, 0]}
+          scale={[0.53, 0.52, 1]}
+        />
+
+        <CornerBoulder
+          position={[-0.62, 0, -0.64]}
+          rotation={[
+            -1.6320386899589952e-16, 0.8901179185171124, 1.825988625068656e-16,
+          ]}
+          scale={[1.02, 0.96, 0.97]}
+        />
+        <CornerBoulder
+          position={[
+            -0.923123896415255, -6.19587516135744e-17, 0.493905124358027,
+          ]}
+          rotation={[3.141592653589793, 0.6457718232379016, -3.141592653589793]}
+          scale={[1.48, 1.41, 1.21]}
+        />
+        <CornerBoulder
+          position={[0.6, 1.69682889018729e-16, 0.77]}
+          rotation={[3.141592653589793, -1.1868238913561442, 3.141592653589793]}
+          scale={[1.02, 0.96, 0.97]}
+        />
+        <CornerBoulder
+          position={[0.63, 0, -0.609999999999999]}
+          rotation={[
+            -1.1001464870327708e-16, -0.36651914291880605,
+            1.6339910746809897e-17,
+          ]}
+          scale={[0.72, 0.94, 1.21]}
+        />
+        <RockFloor
+          scale={[0.98, 1, 0.81]}
+          position={[-0.34, 0.02, 0.41]}
+          rotation={[
+            -3.141592653589793, 0.19198621771937618, -3.141592653589793,
+          ]}
+        />
+        <RockFloor
+          scale={[1.78, 1, 1.59]}
+          position={[-0.0100000000000002, 0.02, -0.21]}
+        />
+      </BaseRoom>
 
       {/* exit */}
       <BaseRoom
@@ -223,10 +337,40 @@ export function Map({ hideCeiling = false }) {
         roomName="exit"
         position={[0, 0, 5]}
         doors={[0, 1]}
-        hasTerminal={false}
+        lockedDoors={{ 0: true }}
+        hasTerminal
         exitDoor={0}
-        lockedDoors={{}}
-        hideCeiling={hideCeiling}></BaseRoom>
+        hideCeiling={hideCeiling}>
+        <CornerBoulder
+          position={[-0.62, 0, -0.64]}
+          rotation={[
+            -1.6320386899589952e-16, 0.8901179185171124, 1.825988625068656e-16,
+          ]}
+          scale={[1.02, 0.96, 0.97]}
+        />
+        <CornerBoulder
+          position={[
+            -0.923123896415255, -6.19587516135744e-17, 0.493905124358027,
+          ]}
+          rotation={[3.141592653589793, 0.6457718232379016, -3.141592653589793]}
+          scale={[1.48, 1.41, 1.21]}
+        />
+        <CornerBoulder
+          position={[
+            0.620956406977153, 1.69682889018729e-16, 0.631516540269551,
+          ]}
+          rotation={[3.141592653589793, -1.1868238913561442, 3.141592653589793]}
+          scale={[1.02, 0.96, 0.97]}
+        />
+        <CornerBoulder
+          position={[0.6, 0, -0.55]}
+          rotation={[
+            -2.1185124710429202e-16, -1.0646508437165378,
+            -1.2952364087692184e-16,
+          ]}
+          scale={[1.48, 1.41, 1.21]}
+        />
+      </BaseRoom>
     </>
   )
 }

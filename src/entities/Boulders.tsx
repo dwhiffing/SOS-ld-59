@@ -7,7 +7,7 @@ interface RockProps {
   rotation?: [number, number, number]
 }
 
-function Rock({ position, scale, rotation = [0, 0, 0] }: RockProps) {
+export function Rock({ position, scale, rotation = [0, 0, 0] }: RockProps) {
   const [w, h, d] = scale
   return (
     <>

@@ -4,7 +4,7 @@ import { playerPos } from '../entities/controller/system'
 import RapierDebug from '../shared/rapierDebug'
 import { Map } from '../components/Map'
 
-const spawnPos: [number, number, number] = [0.2, 0.1, -0]
+const spawnPos: [number, number, number] = [0.2, 0.1, 0]
 playerPos.x = spawnPos[0]
 playerPos.y = spawnPos[1]
 playerPos.z = spawnPos[2]

@@ -18,6 +18,7 @@ export type RoomProps = {
   children?: React.ReactNode
   hideCeiling?: boolean
   exitDoor?: number
+  morseCode?: string
   lockedDoors?: Partial<Record<0 | 1 | 2 | 3, boolean>>
   graffiti?: Partial<Record<0 | 1 | 2 | 3, string>>
 }
@@ -41,6 +42,7 @@ export function BaseRoom({
   hideCeiling,
   exitDoor,
   lockedDoors,
+  morseCode,
 }: RoomProps) {
   const groupRef = useRef<Group>(null)
   const isNearRef = useRef(checkNear(position))
@@ -95,7 +97,7 @@ export function BaseRoom({
             position={[0, 0, 0]}
             intensity={20.0}
             defaultOn
-            // morseCode="...---"
+            morseCode={morseCode}
           />
         )}
         {mountedCount >= 2 && hasTerminal && (
