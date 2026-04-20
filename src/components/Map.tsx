@@ -365,7 +365,7 @@ export function Map({ hideCeiling = false }) {
           scale={[1.02, 0.96, 0.97]}
         />
         <CornerBoulder
-          position={[0.6, 0, -0.55]}
+          position={[0.58, 0, -0.27]}
           rotation={[
             -2.1185124710429202e-16, -1.0646508437165378,
             -1.2952364087692184e-16,
