@@ -11,35 +11,35 @@ export const TextureMaterial = ({
   color?: string
 }) => {
   const { gl } = useThree()
-  const [colorMap, normalMap, roughnessMap, aoMap] = useTexture([
-    `/${path}/diff.jpg`,
-    `/${path}/dx.jpg`,
-    `/${path}/rough.jpg`,
-    `/${path}/ao.jpg`,
+  const [colorMap] = useTexture([
+    `./${path}/diff.jpg`,
+    // `./${path}/dx.jpg`,
+    // `./${path}/rough.jpg`,
+    // `./${path}/ao.jpg`,
   ])
   colorMap.wrapS = RepeatWrapping
   colorMap.wrapT = RepeatWrapping
-  normalMap.wrapS = RepeatWrapping
-  normalMap.wrapT = RepeatWrapping
-  roughnessMap.wrapS = RepeatWrapping
-  roughnessMap.wrapT = RepeatWrapping
-  aoMap.wrapS = RepeatWrapping
-  aoMap.wrapT = RepeatWrapping
+  // normalMap.wrapS = RepeatWrapping
+  // normalMap.wrapT = RepeatWrapping
+  // roughnessMap.wrapS = RepeatWrapping
+  // roughnessMap.wrapT = RepeatWrapping
+  // aoMap.wrapS = RepeatWrapping
+  // aoMap.wrapT = RepeatWrapping
 
   // Pre-upload textures to GPU immediately so the first render doesn't spike
   useEffect(() => {
     gl.initTexture(colorMap)
-    gl.initTexture(normalMap)
-    gl.initTexture(roughnessMap)
-    gl.initTexture(aoMap)
-  }, [gl, colorMap, normalMap, roughnessMap, aoMap])
+    // gl.initTexture(normalMap)
+    // gl.initTexture(roughnessMap)
+    // gl.initTexture(aoMap)
+  }, [gl, colorMap])
 
   return (
     <meshStandardMaterial
-      map={colorMap}
-      normalMap={normalMap}
-      roughnessMap={roughnessMap}
-      aoMap={aoMap}
+      // map={colorMap}
+      // normalMap={normalMap}
+      // roughnessMap={roughnessMap}
+      // aoMap={aoMap}
       color={color}
     />
   )

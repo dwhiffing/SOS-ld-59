@@ -15,7 +15,7 @@ function PlaneMaterial({
   return (
     <TextureMaterial
       path={texturePath!}
-      color={texturePath === 'wall' ? '#444' : color}
+      color={texturePath === 'wall' ? '#333' : '#111'}
     />
   )
 }

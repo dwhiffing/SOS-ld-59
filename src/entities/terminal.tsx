@@ -24,7 +24,7 @@ const COLOR_CURSOR = '#003300'
 const COLOR_RESPONSE_SIGNAL = '#dc0000'
 const COLOR_RESPONSE_CURSOR = '#660000'
 
-new FontFace('TerminalFont', 'url(/font.ttf)')
+new FontFace('TerminalFont', 'url(./font.ttf)')
   .load()
   .then((f) => document.fonts.add(f))
 
