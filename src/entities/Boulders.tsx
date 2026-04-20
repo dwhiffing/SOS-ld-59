@@ -11,7 +11,7 @@ export function Rock({ position, scale, rotation = [0, 0, 0] }: RockProps) {
   const [w, h, d] = scale
   return (
     <>
-      <CuboidCollider args={[w / 2, h / 2, d / 2]} position={position} />
+      {/* <CuboidCollider args={[w / 2, h / 2, d / 2]} position={position} /> */}
       <mesh
         position={position}
         scale={scale}
