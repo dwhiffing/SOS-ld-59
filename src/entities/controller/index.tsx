@@ -5,6 +5,8 @@ import { Mesh, PhysicsBody } from '../../shared/traits'
 import { Controllable, NearestItem } from './traits'
 import { PerspectiveCamera, PointerLockControls } from '@react-three/drei'
 import { RigidBody, CapsuleCollider } from '@react-three/rapier'
+import { useFrame } from '@react-three/fiber'
+import { isTouchDevice, mobileCam } from './system'
 
 export function Controller({
   position = [0, 0, 0],
@@ -31,6 +33,13 @@ export function Controller({
     return () => void entity.destroy()
   }, [world, x, y, z])
 
+  useFrame(() => {
+    if (!isTouchDevice || !perspCamRef.current) return
+    perspCamRef.current.rotation.order = 'YXZ'
+    perspCamRef.current.rotation.y = mobileCam.yaw
+    perspCamRef.current.rotation.x = mobileCam.pitch
+  })
+
   return (
     <group ref={ref}>
       <RigidBody
@@ -45,10 +54,13 @@ export function Controller({
           ref={perspCamRef}
           makeDefault
           name="playerCamera"
+          fov={isTouchDevice ? 110 : 75}
           position={[0, 0.18, 0]}
           rotation={[0, -Math.PI, 0]}
         />
-        <PointerLockControls enabled camera={perspCamRef.current} />
+        {!isTouchDevice && (
+          <PointerLockControls enabled camera={perspCamRef.current} />
+        )}
       </RigidBody>
     </group>
   )

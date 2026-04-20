@@ -187,7 +187,7 @@ export function Terminal({
 
   return (
     <RigidBody ref={bodyRef} type="fixed" mass={1} colliders={false}>
-      <CuboidCollider scale={[0.5, 0.5, 0.5]} args={size} position={position} />
+      <CuboidCollider scale={[0.2, 0.5, 0.2]} args={size} position={position} />
 
       <group
         position={[

@@ -1,4 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+
+function useDelayed(value: boolean, delay: number) {
+  const [delayed, setDelayed] = useState(value)
+  useEffect(() => {
+    if (delay === 0) { setDelayed(value); return }
+    const t = setTimeout(() => setDelayed(value), delay)
+    return () => clearTimeout(t)
+  }, [value, delay])
+  return delayed
+}
 import { animated, useSpring } from '@react-spring/three'
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import { useTraitEffect, useWorld } from 'koota/react'
@@ -129,7 +139,7 @@ export const Door: React.FC<DoorProps> = ({
   return (
     <RigidBody type="fixed" colliders={false}>
       <group position={position}>
-        {!isOpen && <CuboidCollider args={_args} scale={0.5} />}
+        {useDelayed(!isOpen, isOpen ? 500 : 0) && <CuboidCollider args={_args} scale={0.5} />}
         <mesh
           name={!isOpen ? 'door' : ''}
           userData={{ doorId }}

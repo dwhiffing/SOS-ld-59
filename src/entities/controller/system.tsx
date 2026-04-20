@@ -49,11 +49,142 @@ const AUTO_SUBMIT_MS = 3000
 const FF_SPEED = 15
 export const playerPos = { x: 0, y: 0, z: 0 }
 
+const MAX_INTERACT_DIST = Math.sqrt(0.15)
+
+// Mobile touch state
+export const isTouchDevice =
+  typeof window !== 'undefined' &&
+  ('ontouchstart' in window || navigator.maxTouchPoints > 0)
+export const mobileCam = { yaw: -Math.PI, pitch: 0 }
+let touchMoveForward = false
+// Primary touch: interact / tap / double-tap-hold-forward
+let activeTouchId: number | null = null
+let touchStartX = 0
+let touchStartY = 0
+let touchDragging = false
+let lastTapEndTime = 0
+let doubleTapHeld = false
+const DRAG_THRESHOLD_PX = 8
+const DOUBLE_TAP_MS = 300
+const TOUCH_SENSITIVITY = 0.004
+
+function initTouchListeners() {
+  window.addEventListener(
+    'touchstart',
+    (e) => {
+      resumeAudioContext()
+      const now = performance.now()
+
+      for (const touch of e.changedTouches) {
+        if (activeTouchId !== null) continue
+
+        activeTouchId = touch.identifier
+        touchStartX = touch.clientX
+        touchStartY = touch.clientY
+        touchDragging = false
+
+        // Double tap + hold → move forward (disabled during morse)
+        if (
+          now - lastTapEndTime < DOUBLE_TAP_MS &&
+          morse.phase !== 'recording' &&
+          morse.phase !== 'responding'
+        ) {
+          doubleTapHeld = true
+          touchMoveForward = true
+          continue
+        }
+
+        // Single touch: potential interact hold
+        keys.add(' ')
+      }
+    },
+    { passive: false },
+  )
+
+  window.addEventListener(
+    'touchmove',
+    (e) => {
+      e.preventDefault()
+
+      for (const touch of e.changedTouches) {
+        if (touch.identifier !== activeTouchId) continue
+
+        const dx = touch.clientX - touchStartX
+        const dy = touch.clientY - touchStartY
+
+        if (
+          !touchDragging &&
+          Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD_PX
+        ) {
+          touchDragging = true
+          keys.delete(' ')
+        }
+
+        // Single-finger drag → camera look (always, including while moving forward)
+        if (touchDragging) {
+          mobileCam.yaw -= dx * TOUCH_SENSITIVITY
+          mobileCam.pitch -= dy * TOUCH_SENSITIVITY
+          mobileCam.pitch = Math.max(
+            -Math.PI / 2,
+            Math.min(Math.PI / 2, mobileCam.pitch),
+          )
+          touchStartX = touch.clientX
+          touchStartY = touch.clientY
+        }
+      }
+    },
+    { passive: false },
+  )
+
+  window.addEventListener(
+    'touchend',
+    (e) => {
+      for (const touch of e.changedTouches) {
+        if (touch.identifier !== activeTouchId) continue
+
+        activeTouchId = null
+
+        if (doubleTapHeld) {
+          doubleTapHeld = false
+          touchMoveForward = false
+          continue
+        }
+
+        if (!touchDragging) {
+          justPressed.add(' ')
+          lastTapEndTime = performance.now()
+        }
+
+        keys.delete(' ')
+        touchDragging = false
+      }
+    },
+    { passive: false },
+  )
+
+  window.addEventListener(
+    'touchcancel',
+    () => {
+      activeTouchId = null
+      doubleTapHeld = false
+      touchMoveForward = false
+      touchDragging = false
+      keys.delete(' ')
+    },
+    { passive: false },
+  )
+}
+
 function initKeyboardListeners() {
   if (initialized) return
   initialized = true
 
   if (typeof window === 'undefined') return
+
+  if (isTouchDevice) {
+    initTouchListeners()
+    return
+  }
 
   window.addEventListener('keydown', (e) => {
     resumeAudioContext()
@@ -88,11 +219,23 @@ export const controllerInputSystem = (world: World, _delta: number) => {
   const now = performance.now()
 
   if (morse.phase === 'recording') {
-    const nearest = world.get(NearestItem) as any
-    const nearestRoomId = nearest?.mesh?.userData?.roomId
-    if (nearestRoomId !== morse.terminalRoomId) {
-      cancelRecording(true)
+    // Cancel if player walks away from the terminal (not just looks away)
+    let terminalFound = false
+    for (const e of world.entities) {
+      const mesh = e.get(Mesh) as any
+      if (!mesh) continue
+      const objs = mesh.getObjectsByProperty?.('name', 'terminal') ?? []
+      for (const obj of objs) {
+        if (obj?.userData?.roomId !== morse.terminalRoomId) continue
+        obj.getWorldPosition(_dPos)
+        const dx = playerPos.x - _dPos.x
+        const dz = playerPos.z - _dPos.z
+        if (Math.sqrt(dx * dx + dz * dz) <= MAX_INTERACT_DIST * 0.8) {
+          terminalFound = true
+        }
+      }
     }
+    if (!terminalFound) cancelRecording(true)
   }
 
   updateMorseState(now)
@@ -150,6 +293,10 @@ export const controllerInputSystem = (world: World, _delta: number) => {
   moveEntities(world, now)
 
   justPressed = new Set([])
+}
+
+export function pressR() {
+  justPressed.add('r')
 }
 
 export default controllerInputSystem
@@ -339,7 +486,8 @@ function useDoor(world: World, nearest: any) {
 }
 
 function moveEntities(world: World, now: number) {
-  const forwardKey = keys.has('w') || keys.has('arrowup') ? 1 : 0
+  const forwardKey =
+    keys.has('w') || keys.has('arrowup') || touchMoveForward ? 1 : 0
   const backKey = keys.has('s') || keys.has('arrowdown') ? 1 : 0
   const leftKey = keys.has('a') || keys.has('arrowleft') ? 1 : 0
   const rightKey = keys.has('d') || keys.has('arrowright') ? 1 : 0
@@ -360,7 +508,7 @@ function moveEntities(world: World, now: number) {
     if (_moveVec.lengthSq() > 0) _moveVec.normalize()
 
     const phys = entity.get(PhysicsBody)?.api as any
-    const speed = 1.05
+    const speed = isTouchDevice ? 0.7 : 1.05
     phys.current.setLinvel(
       { x: _moveVec.x * speed, y: 0, z: _moveVec.z * speed },
       true,
@@ -382,8 +530,6 @@ function moveEntities(world: World, now: number) {
     }
   }
 }
-
-const MAX_INTERACT_DIST = Math.sqrt(0.5)
 
 const computeAndSetNearest = (world: World, camera: any) => {
   let best: { entity: any; mesh: any; distance: number } | null = null
