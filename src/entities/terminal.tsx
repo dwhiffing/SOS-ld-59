@@ -10,22 +10,18 @@ import { morse, decodeMorse } from './morseRecorder'
 import { BITMAP_HEIGHT, BITMAP_WIDTH } from '../constants'
 import { AnimatedTint } from '../components/AnimatedTint'
 
-const TERMINAL_TABLE_HEIGHT = 0.2
+const TERMINAL_TABLE_HEIGHT = 0.21
 
-const FONT_SIZE = 40
+const FONT_SIZE = 50
 const MORSE_HIGH_FRAC = 0.42
 const MORSE_LOW_FRAC = 0.58
-const LINE_WIDTH = 3
+const LINE_WIDTH = 4
 const SIGNAL_PAD = 15
 const COLOR_BG = '#000f00'
 const COLOR_SIGNAL = '#00dc00'
 const COLOR_CURSOR = '#003300'
 const COLOR_RESPONSE_SIGNAL = '#dc0000'
 const COLOR_RESPONSE_CURSOR = '#660000'
-
-new FontFace('TerminalFont', 'url(./font.ttf)')
-  .load()
-  .then((f) => document.fonts.add(f))
 
 function draw(ctx: CanvasRenderingContext2D, w: number, h: number) {
   ctx.fillStyle = COLOR_BG
@@ -74,10 +70,10 @@ function draw(ctx: CanvasRenderingContext2D, w: number, h: number) {
   }
 
   ctx.fillStyle = responding ? COLOR_RESPONSE_SIGNAL : COLOR_SIGNAL
-  ctx.font = `${FONT_SIZE}px TerminalFont`
+  ctx.font = `bold ${FONT_SIZE}px Arial`
   ctx.textAlign = 'center'
   ctx.textBaseline = 'bottom'
-  const charY = HIGH_Y - 4
+  const charY = HIGH_Y - FONT_SIZE * 0.26
   for (const { char, x0, x1 } of decodeMorse(morse.signal, displayHead)) {
     ctx.fillText(char, toX((x0 + x1) / 2), charY)
   }
@@ -186,7 +182,10 @@ export function Terminal({
 
   return (
     <RigidBody ref={bodyRef} type="fixed" mass={1} colliders={false}>
-      <CuboidCollider scale={[0.2, 0.5, 0.2]} args={size} position={position} />
+      <CuboidCollider
+        args={[size[0] * 0.01, size[1], size[2] * 1.5]}
+        position={position}
+      />
 
       <group
         position={[

@@ -28,7 +28,7 @@ export const morse = {
 
 const RESPONSE_PAUSE_MS = 1000
 const DOT_MS = 75
-const DASH_MS = 200
+const DASH_MS = 250
 const ELEM_GAP_MS = 100
 const LETTER_GAP_MS = 500
 
@@ -114,7 +114,7 @@ export const HELLO_SIGNAL = encodeResponse('HELLO')
 export { RESPONSE_PAUSE_MS }
 
 // samples; tune relative to tap speed. 400ms at 50ms/sample = 8
-const DOT_DASH_THRESHOLD = Math.round((200 / MORSE_DURATION) * BITMAP_WIDTH)
+const DOT_DASH_THRESHOLD = Math.round((250 / MORSE_DURATION) * BITMAP_WIDTH)
 const LETTER_GAP_THRESHOLD = Math.round((500 / MORSE_DURATION) * BITMAP_WIDTH)
 
 const MORSE_TABLE: Record<string, string> = {
