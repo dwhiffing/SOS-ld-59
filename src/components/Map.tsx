@@ -149,7 +149,7 @@ export function Map({ hideCeiling = false }) {
         lockedDoors={{ 0: true }}
         hideCeiling={hideCeiling}>
         <CornerBoulder
-          position={[-0.64, 0, -0.6]}
+          position={[-0.64, 0, -0.55]}
           rotation={[
             -2.74174359081059e-16, 1.1868238913561493, 3.0997567389870457e-16,
           ]}

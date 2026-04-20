@@ -181,7 +181,7 @@ export const Door: React.FC<DoorProps> = ({
           <mesh castShadow>
             <boxGeometry args={_args} />
             <meshStandardMaterial
-              color="#555"
+              color="#444"
               bumpMap={bumpMap}
               bumpScale={5}
               roughness={0.9}

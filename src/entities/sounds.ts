@@ -310,43 +310,36 @@ export function playDoorClose() {
 
 export function playGameStart() {
   const now = ctx.currentTime
-  // long reverb tail
-  const reverb = ctx.createConvolver()
-  const rate = ctx.sampleRate
-  const rLen = Math.floor(rate * 5)
-  const rBuf = ctx.createBuffer(2, rLen, rate)
-  for (let c = 0; c < 2; c++) {
-    const d = rBuf.getChannelData(c)
-    for (let i = 0; i < rLen; i++)
-      d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / rLen, 1.2)
-  }
-  reverb.buffer = rBuf
-  const reverbGain = ctx.createGain()
-  reverbGain.gain.value = 1.2
-  reverb.connect(reverbGain)
-  reverbGain.connect(sfxMaster)
+  const freq = 600
+  const dot = 0.05
+  const dash = 0.15
+  const gap = 0.04
+  const charGap = 0.1
 
-  // slow descending low tones, wide spacing
-  const beeps: [number, number][] = [
-    [520, 0],
-    [465, 0.3],
-    [310, 0.5],
-  ]
-  beeps.forEach(([freq, offset]) => {
-    const t = now + offset
-    const osc = ctx.createOscillator()
-    osc.type = 'sine'
-    osc.frequency.setValueAtTime(freq, t)
-    osc.frequency.exponentialRampToValueAtTime(freq * 0.55, t + 1.8)
+  // ... --- ...  (SOS)
+  const S = [dot, dot, dot]
+  const O = [dash, dash, dash]
+  const chars = [S, O, S]
+  let t = now
+  chars.forEach((char, ci) => {
+    char.forEach((dur, si) => {
+      const osc = ctx.createOscillator()
+      osc.type = 'sine'
+      osc.frequency.value = freq
 
-    const gain = ctx.createGain()
-    gain.gain.setValueAtTime(0, t)
-    gain.gain.linearRampToValueAtTime(0.3, t + 0.1)
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 3.5)
+      const gain = ctx.createGain()
+      gain.gain.setValueAtTime(0, t)
+      gain.gain.linearRampToValueAtTime(0.35, t + 0.005)
+      gain.gain.setValueAtTime(0.35, t + dur - 0.005)
+      gain.gain.linearRampToValueAtTime(0, t + dur)
 
-    osc.connect(gain)
-    gain.connect(reverb)
-    osc.start(t)
-    osc.stop(t + 2.5)
+      osc.connect(gain)
+      gain.connect(sfxMaster)
+      osc.start(t)
+      osc.stop(t + dur)
+
+      t += dur + (si < char.length - 1 ? gap : 0)
+    })
+    if (ci < chars.length - 1) t += charGap
   })
 }

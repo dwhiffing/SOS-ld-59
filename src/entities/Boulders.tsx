@@ -19,7 +19,7 @@ export function Rock({ position, scale, rotation = [0, 0, 0] }: RockProps) {
         castShadow
         receiveShadow>
         <dodecahedronGeometry args={[0.5, 0]} />
-        <TextureMaterial path="wall" color="#4a4a4a" />
+        <TextureMaterial path="wall" color="#333" />
       </mesh>
     </>
   )
