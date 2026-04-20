@@ -1,4 +1,4 @@
-# lightcrumbs2
+# SOS
 
 - [Koota](https://github.com/pmndrs/koota) for state management, powering the core behavior loop.
 - [Vite](https://vitejs.dev/) for bundling and running the game outside of Triplex.

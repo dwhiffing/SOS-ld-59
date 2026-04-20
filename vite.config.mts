@@ -7,7 +7,7 @@ export default defineConfig({
    * to infer your repository name, falling back to the app name chosen when
    * generating your project.
    */
-  // base: "/" + (process.env.GITHUB_REPOSITORY?.split("/").pop() || "lightcrumbs2"),
-  base: '/',
+  // base: "/" + (process.env.GITHUB_REPOSITORY?.split("/").pop() || "SOS"),
+  base: './',
   plugins: [react()],
 })
