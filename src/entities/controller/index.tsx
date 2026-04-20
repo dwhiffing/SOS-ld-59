@@ -54,7 +54,7 @@ export function Controller({
           ref={perspCamRef}
           makeDefault
           name="playerCamera"
-          fov={isTouchDevice ? 110 : 75}
+          fov={isTouchDevice ? 90 : 75}
           position={[0, 0.18, 0]}
           rotation={[0, -Math.PI, 0]}
         />

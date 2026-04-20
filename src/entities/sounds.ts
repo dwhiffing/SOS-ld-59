@@ -300,6 +300,40 @@ export function playDoorUnlock() {
   source.start()
 }
 
+export function playRecordClear() {
+  const now = ctx.currentTime
+  for (const [offset, freq] of [[0, 640], [0.07, 380]] as const) {
+    const osc = ctx.createOscillator()
+    osc.type = 'sine'
+    osc.frequency.value = freq
+    const gain = ctx.createGain()
+    gain.gain.setValueAtTime(0, now + offset)
+    gain.gain.linearRampToValueAtTime(0.18, now + offset + 0.008)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.07)
+    osc.connect(gain)
+    gain.connect(sfxMaster)
+    osc.start(now + offset)
+    osc.stop(now + offset + 0.07)
+  }
+}
+
+export function playRecordStart() {
+  const now = ctx.currentTime
+  for (const [offset, freq] of [[0, 480], [0.07, 640]] as const) {
+    const osc = ctx.createOscillator()
+    osc.type = 'sine'
+    osc.frequency.value = freq
+    const gain = ctx.createGain()
+    gain.gain.setValueAtTime(0, now + offset)
+    gain.gain.linearRampToValueAtTime(0.18, now + offset + 0.008)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.07)
+    osc.connect(gain)
+    gain.connect(sfxMaster)
+    osc.start(now + offset)
+    osc.stop(now + offset + 0.07)
+  }
+}
+
 export function playDoorOpen() {
   playDoor(0.5, 1.0, 0.5)
 }

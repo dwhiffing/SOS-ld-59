@@ -29,6 +29,8 @@ import {
   playKeypad,
   playMorseHi,
   playMorseLo,
+  playRecordClear,
+  playRecordStart,
   resumeAudioContext,
   setSfxMuted,
   startStatic,
@@ -49,7 +51,8 @@ const AUTO_SUBMIT_MS = 3000
 const FF_SPEED = 15
 export const playerPos = { x: 0, y: 0, z: 0 }
 
-const MAX_INTERACT_DIST = Math.sqrt(0.15)
+export const MAX_INTERACT_DIST = Math.sqrt(0.15)
+export const MAX_TERMINAL_DIST = Math.sqrt(0.04)
 
 // Mobile touch state
 export const isTouchDevice =
@@ -230,7 +233,7 @@ export const controllerInputSystem = (world: World, _delta: number) => {
         obj.getWorldPosition(_dPos)
         const dx = playerPos.x - _dPos.x
         const dz = playerPos.z - _dPos.z
-        if (Math.sqrt(dx * dx + dz * dz) <= MAX_INTERACT_DIST * 0.8) {
+        if (Math.sqrt(dx * dx + dz * dz) <= MAX_TERMINAL_DIST * 2) {
           terminalFound = true
         }
       }
@@ -336,6 +339,7 @@ function updateMorseState(now: number) {
 
 function startRecording(now: number) {
   if (morse.phase === 'recording') return
+  playRecordStart()
   morse.phase = 'recording'
   morse.signal = new Uint8Array(BITMAP_WIDTH)
   morse.playhead = 0
@@ -347,6 +351,7 @@ function startRecording(now: number) {
 }
 
 function cancelRecording(clearRoom = false) {
+  playRecordClear()
   morse.phase = 'idle'
   morse.keyHeld = false
   morse.signal = new Uint8Array(BITMAP_WIDTH)
@@ -542,10 +547,15 @@ const computeAndSetNearest = (world: World, camera: any) => {
       const objs = mesh.getObjectsByProperty?.('name', name)
       for (const obj of objs) {
         if (!obj) continue
+        obj.getWorldPosition(_aPos)
+        const pdx = playerPos.x - _aPos.x
+        const pdz = playerPos.z - _aPos.z
+        const distLimit = name === 'terminal' ? MAX_TERMINAL_DIST : maxDist
+        if (Math.sqrt(pdx * pdx + pdz * pdz) > distLimit) continue
         const intersects = raycaster.intersectObject(obj, true)
         if (intersects.length > 0) {
           const dist = intersects[0].distance
-          if (dist < maxDist && (best === null || dist < best.distance)) {
+          if (best === null || dist < best.distance) {
             best = { entity: e, mesh: obj, distance: dist }
           }
         }

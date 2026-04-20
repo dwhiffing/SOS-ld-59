@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTrait, useWorld } from 'koota/react'
-import { NearestFilter, type Object3D } from 'three'
-import { CanvasTexture } from 'three'
+import { CanvasTexture, NearestFilter, type Object3D } from 'three'
 
 import { Mesh, PhysicsBody } from '../shared/traits'
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
@@ -116,7 +115,7 @@ function bezelStrips(
 
 export function Terminal({
   position = [0, 0, 0] as [number, number, number],
-  size = [0.15, 0.45, 0.15] as [number, number, number],
+  size = [0.12, 0.25, 0.12] as [number, number, number],
   roomId,
   roomName,
 }: {
