@@ -19,6 +19,7 @@ export type RoomProps = {
   hideCeiling?: boolean
   exitDoor?: number
   morseCode?: string
+  previewMessage?: string
   lockedDoors?: Partial<Record<0 | 1 | 2 | 3, boolean>>
   graffiti?: Partial<Record<0 | 1 | 2 | 3, string>>
 }
@@ -43,6 +44,7 @@ export function BaseRoom({
   exitDoor,
   lockedDoors,
   morseCode,
+  previewMessage,
 }: RoomProps) {
   const groupRef = useRef<Group>(null)
   const isNearRef = useRef(checkNear(position))
@@ -103,7 +105,11 @@ export function BaseRoom({
           />
         )}
         {mountedCount >= 2 && hasTerminal && (
-          <Terminal roomId={roomId} roomName={roomName} />
+          <Terminal
+            roomId={roomId}
+            roomName={roomName}
+            previewMessage={previewMessage}
+          />
         )}
         {/* {childArrayRef.current} */}
         {childArrayRef.current.slice(0, mountedCount - fixedCount)}

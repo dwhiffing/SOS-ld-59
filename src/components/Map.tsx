@@ -68,7 +68,8 @@ export function Map({ hideCeiling = false }) {
         doors={[0, 1]}
         hasTerminal
         lockedDoors={{ 0: true }}
-        hideCeiling={hideCeiling}>
+        hideCeiling={hideCeiling}
+        previewMessage="SOS">
         <Shelf position={[0.62, 0.3, 0.36]} />
 
         <Crates position={[-0.64, 0, 0.62]} />

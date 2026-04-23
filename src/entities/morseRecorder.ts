@@ -74,7 +74,20 @@ const CHAR_TO_MORSE: Record<string, string> = {
 
 const RESPONSE_LEAD_PX = 20 // blank pixels before signal starts
 
-export function encodeResponse(text: string): Uint8Array<ArrayBuffer> {
+export function encodeSignal(
+  text: string,
+  opts?: {
+    dotMs?: number
+    dashMs?: number
+    elemGapMs?: number
+    letterGapMs?: number
+  },
+): Uint8Array<ArrayBuffer> {
+  const dotMs = opts?.dotMs ?? DOT_MS
+  const dashMs = opts?.dashMs ?? DASH_MS
+  const elemGapMs = opts?.elemGapMs ?? ELEM_GAP_MS
+  const letterGapMs = opts?.letterGapMs ?? LETTER_GAP_MS
+
   const msPerPixel = MORSE_DURATION / BITMAP_WIDTH
   const signal = new Uint8Array(new ArrayBuffer(BITMAP_WIDTH))
   let pixel = RESPONSE_LEAD_PX
@@ -91,12 +104,18 @@ export function encodeResponse(text: string): Uint8Array<ArrayBuffer> {
   for (let ci = 0; ci < chars.length; ci++) {
     const code = CHAR_TO_MORSE[chars[ci]]
     if (!code) continue
-    if (ci > 0) fill(0, LETTER_GAP_MS)
+    if (ci > 0) fill(0, letterGapMs)
     for (let ei = 0; ei < code.length; ei++) {
-      if (ei > 0) fill(0, ELEM_GAP_MS)
-      fill(1, code[ei] === '-' ? DASH_MS : DOT_MS)
+      if (ei > 0) fill(0, elemGapMs)
+      fill(1, code[ei] === '-' ? dashMs : dotMs)
     }
   }
+
+  return signal
+}
+
+export function encodeResponse(text: string): Uint8Array<ArrayBuffer> {
+  const signal = encodeSignal(text)
 
   let end = 0
   for (let i = signal.length - 1; i >= 0; i--) {

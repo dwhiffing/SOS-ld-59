@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTrait, useWorld } from 'koota/react'
 import { CanvasTexture, NearestFilter, type Object3D } from 'three'
 
@@ -6,7 +6,7 @@ import { Mesh, PhysicsBody } from '../shared/traits'
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import { NearestItem } from './controller/traits'
 import { useFrame } from '@react-three/fiber'
-import { morse, decodeMorse } from './morseRecorder'
+import { morse, decodeMorse, encodeSignal } from './morseRecorder'
 import { BITMAP_HEIGHT, BITMAP_WIDTH } from '../constants'
 import { AnimatedTint } from '../components/AnimatedTint'
 
@@ -23,11 +23,43 @@ const COLOR_CURSOR = '#003300'
 const COLOR_RESPONSE_SIGNAL = '#dc0000'
 const COLOR_RESPONSE_CURSOR = '#660000'
 
-function draw(ctx: CanvasRenderingContext2D, w: number, h: number) {
+function draw(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  previewSignal?: Uint8Array | null,
+) {
   ctx.fillStyle = COLOR_BG
   ctx.fillRect(0, 0, w, h)
 
   if (morse.phase === 'idle') return
+
+  if (previewSignal && morse.phase === 'recording') {
+    const HIGH_Y = Math.floor(h * MORSE_HIGH_FRAC)
+    const LOW_Y = Math.floor(h * MORSE_LOW_FRAC)
+    const signalW = w - SIGNAL_PAD * 2
+    const toXP = (sx: number) =>
+      SIGNAL_PAD + (sx + 100) * (signalW / BITMAP_WIDTH)
+
+    ctx.strokeStyle = COLOR_CURSOR
+    ctx.lineWidth = LINE_WIDTH
+    ctx.beginPath()
+    ctx.moveTo(0, LOW_Y + 0.5)
+    ctx.lineTo(SIGNAL_PAD, LOW_Y + 0.5)
+    let prevY = (previewSignal[0] === 1 ? HIGH_Y : LOW_Y) + 0.5
+    if (prevY !== LOW_Y + 0.5) ctx.lineTo(SIGNAL_PAD, prevY)
+    for (let x = 1; x < BITMAP_WIDTH; x++) {
+      const y = (previewSignal[x] === 1 ? HIGH_Y : LOW_Y) + 0.5
+      if (y !== prevY) {
+        ctx.lineTo(toXP(x), prevY)
+        ctx.lineTo(toXP(x), y)
+        prevY = y
+      }
+    }
+    ctx.lineTo(w, prevY)
+    if (prevY !== LOW_Y + 0.5) ctx.lineTo(w, LOW_Y + 0.5)
+    ctx.stroke()
+  }
 
   const HIGH_Y = Math.floor(h * MORSE_HIGH_FRAC)
   const LOW_Y = Math.floor(h * MORSE_LOW_FRAC)
@@ -114,16 +146,23 @@ export function Terminal({
   size = [0.12, 0.25, 0.12] as [number, number, number],
   roomId,
   roomName,
+  previewMessage,
 }: {
   position?: [number, number, number]
   size?: [number, number, number]
   roomId?: string
   roomName?: string
+  previewMessage?: string
 }) {
   const world = useWorld()
   const ref = useRef<Object3D | null>(null)
   const bodyRef = useRef<any>(null)
   const nearest = useTrait(world, NearestItem)
+  const previewOpts = { dashMs: 400, elemGapMs: 250, letterGapMs: 1000 }
+  const previewSignal = useMemo(
+    () => (previewMessage ? encodeSignal(previewMessage, previewOpts) : null),
+    [previewMessage],
+  )
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [tex, setTex] = useState<CanvasTexture | null>(null)
@@ -157,7 +196,7 @@ export function Terminal({
     if (isActive) {
       if (morse.playhead !== lastPlayheadRef.current) {
         lastPlayheadRef.current = morse.playhead
-        draw(ctx, BITMAP_WIDTH, BITMAP_HEIGHT)
+        draw(ctx, BITMAP_WIDTH, BITMAP_HEIGHT, previewSignal)
         tex.needsUpdate = true
       }
     } else if (!isMyRoom && lastPlayheadRef.current !== -1) {

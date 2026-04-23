@@ -25,7 +25,6 @@ export const ROOM_KNOWLEDGE: Record<string, QAEntry[]> = {
   '1': [
     {
       phrases: ['SOS'],
-      default: true,
       response: 'HELLO',
       sideEffect: (roomId) => {
         const store = useGameStore.getState()
