@@ -3,6 +3,7 @@ export interface QAEntry {
   response: string | string[] // string = single message; array = play in sequence; side effect fires after last
   threshold?: number // overrides global SIMILARITY_THRESHOLD if set
   default?: boolean // used as fallback response when no query matches
+  condition?: (roomId: string) => boolean // if set, only used as default when condition is true
   sideEffect?: (roomId: string) => void
 }
 
@@ -11,6 +12,10 @@ import useGameStore from '../stores/gameStore'
 const DIRECTIONS = ['north', 'south', 'east', 'west']
 function getRoomDoorIds(roomId: string) {
   return DIRECTIONS.map((d) => `${roomId}-${d}`)
+}
+function areRoomDoorsUnlocked(roomId: string) {
+  const store = useGameStore.getState()
+  return getRoomDoorIds(roomId).some((id) => store.isDoorUnlocked(id))
 }
 
 export const GENERIC_KNOWLEDGE: QAEntry[] = [
@@ -36,10 +41,16 @@ export const ROOM_KNOWLEDGE: Record<string, QAEntry[]> = {
     {
       phrases: ['SOS', 'DOOR', 'HELP'],
       default: true,
+      condition: areRoomDoorsUnlocked,
+      response: ['MY NAME IS', 'QUINCY'],
+    },
+    {
+      phrases: ['SOS', 'DOOR', 'HELP'],
+      default: true,
       response: 'OPEN?',
     },
     {
-      phrases: ['OPEN', 'OPENDOOR', 'YES', 'GO', 'OUT'],
+      phrases: ['OPEN', 'OPENDOOR', 'YES', 'GO', 'OUT', 'NAME'],
       response: ['MY NAME IS', 'QUINCY'],
       sideEffect: (roomId) => {
         const store = useGameStore.getState()

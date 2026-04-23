@@ -22,7 +22,10 @@ export function queryTerminal(input: string, roomName: string): QueryResult {
 
   if (match) return { responses: pickResponse(match.response), entry: match }
 
-  const defaultEntry = knowledge.find((e) => e.default) ?? null
+  const defaultEntry =
+    knowledge.find((e) => e.default && e.condition?.(roomName)) ??
+    knowledge.find((e) => e.default && !e.condition) ??
+    null
   if (defaultEntry)
     return {
       responses: pickResponse(defaultEntry.response),
