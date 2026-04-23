@@ -183,7 +183,7 @@ export function Terminal({
   return (
     <RigidBody ref={bodyRef} type="fixed" mass={1} colliders={false}>
       <CuboidCollider
-        args={[size[0] * 0.01, size[1], size[2] * 1.5]}
+        args={[size[0] * 0.2, size[1] * 1.75, size[2] * 0.7]}
         position={position}
       />
 
@@ -199,7 +199,7 @@ export function Terminal({
           name="terminal"
           visible={false}
           userData={{ roomId, roomName }}>
-          <boxGeometry args={size} />
+          <boxGeometry args={[size[0] * 0.2, size[1] * 1.75, size[2] * 0.7]} />
         </mesh>
 
         <mesh castShadow receiveShadow position={[0, 0.07, 0]}>
