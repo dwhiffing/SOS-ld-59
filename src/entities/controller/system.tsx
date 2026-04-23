@@ -179,7 +179,6 @@ function initTouchListeners() {
     },
     { passive: false },
   )
-
 }
 
 function initKeyboardListeners() {
@@ -330,8 +329,7 @@ function updateMorseState(now: number) {
     }
   } else if (morse.phase === 'responding') {
     if (justPressed.has('r')) {
-      morse.pendingSideEffect?.()
-      morse.pendingSideEffect = null
+      sideEffectWithMessage()
       cancelRecording(true)
     } else {
       advanceResponse(now)
@@ -352,6 +350,18 @@ function startRecording(now: number) {
   morse.ffStart = 0
   morse.responseSignal = null
   morse.justStarted = true
+}
+
+function sideEffectWithMessage() {
+  if (!morse.pendingSideEffect) return
+  const before = { ...useGameStore.getState().lockedDoors }
+  morse.pendingSideEffect()
+  morse.pendingSideEffect = null
+  const after = useGameStore.getState().lockedDoors
+  const newlyUnlocked = Object.keys(after).some(
+    (k) => before[k] === true && after[k] === false,
+  )
+  if (newlyUnlocked) morse.sideEffectMessage = performance.now()
 }
 
 function cancelRecording(clearRoom = false) {
@@ -453,8 +463,7 @@ function advanceResponse(now: number) {
       morse.ffBase = 0
     } else {
       morse.phase = 'responded'
-      morse.pendingSideEffect?.()
-      morse.pendingSideEffect = null
+      sideEffectWithMessage()
     }
   }
 }

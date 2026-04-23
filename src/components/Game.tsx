@@ -142,10 +142,47 @@ function MobileCancelButton() {
   )
 }
 
+function DoorUnlockedToast() {
+  const [toastKey, setToastKey] = useState<number | null>(null)
+  const lastFlash = useRef(0)
+
+  useEffect(() => {
+    let raf: number
+    const check = () => {
+      if (morse.sideEffectMessage !== lastFlash.current) {
+        lastFlash.current = morse.sideEffectMessage
+        setToastKey(morse.sideEffectMessage)
+      }
+      raf = requestAnimationFrame(check)
+    }
+    raf = requestAnimationFrame(check)
+    return () => cancelAnimationFrame(raf)
+  }, [])
+
+  if (toastKey === null) return null
+
+  return (
+    <div
+      key={toastKey}
+      style={{
+        color: '#00dc00',
+        fontSize: 14,
+        letterSpacing: 2,
+        pointerEvents: 'none',
+        animation: 'hudMessageFade 3s ease-out forwards',
+        opacity: 1,
+        textTransform: 'uppercase',
+      }}>
+      Door unlocked
+    </div>
+  )
+}
+
 function Hud() {
   return (
     <div className="ui">
       <SoundModeToast />
+      <DoorUnlockedToast />
       <MobileCancelButton />
     </div>
   )

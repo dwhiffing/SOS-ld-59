@@ -24,6 +24,7 @@ export const morse = {
   pendingSideEffect: null as (() => void) | null,
   responseSignalEnd: 0, // pixel index where signal content ends
   responseQueue: [] as string[], // remaining messages to play after current
+  sideEffectMessage: 0, // timestamp set when a side effect fires, to trigger screen flash
 }
 
 const RESPONSE_PAUSE_MS = 1000
