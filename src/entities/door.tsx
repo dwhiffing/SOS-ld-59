@@ -3,7 +3,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 function useDelayed(value: boolean, delay: number) {
   const [delayed, setDelayed] = useState(value)
   useEffect(() => {
-    if (delay === 0) { setDelayed(value); return }
+    if (delay === 0) {
+      setDelayed(value)
+      return
+    }
     const t = setTimeout(() => setDelayed(value), delay)
     return () => clearTimeout(t)
   }, [value, delay])
@@ -139,7 +142,9 @@ export const Door: React.FC<DoorProps> = ({
   return (
     <RigidBody type="fixed" colliders={false}>
       <group position={position}>
-        {useDelayed(!isOpen, isOpen ? 500 : 0) && <CuboidCollider args={_args} scale={0.5} />}
+        {useDelayed(!isOpen, isOpen ? 200 : 0) && (
+          <CuboidCollider args={_args} scale={0.5} />
+        )}
         <mesh
           name={!isOpen ? 'door' : ''}
           userData={{ doorId }}
