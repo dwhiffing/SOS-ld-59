@@ -37,7 +37,7 @@ export const ROOM_KNOWLEDGE: Record<string, QAEntry[]> = {
     {
       phrases: ['SOS', 'DOOR', 'HELP'],
       default: true,
-      response: 'OPEN DOOR?',
+      response: 'OPEN?',
     },
     {
       phrases: ['OPEN', 'OPENDOOR', 'YES', 'GO', 'OUT'],
