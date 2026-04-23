@@ -40,7 +40,7 @@ export const ROOM_KNOWLEDGE: Record<string, QAEntry[]> = {
       response: 'OPEN DOOR?',
     },
     {
-      phrases: ['OPEN', 'YES', 'GO', 'OUT'],
+      phrases: ['OPEN', 'OPENDOOR', 'YES', 'GO', 'OUT'],
       response: ['MY NAME IS', 'QUINCY'],
       sideEffect: (roomId) => {
         const store = useGameStore.getState()
@@ -68,7 +68,7 @@ export const ROOM_KNOWLEDGE: Record<string, QAEntry[]> = {
       },
     },
     {
-      phrases: ['CHAIR'],
+      phrases: ['CHAIR', 'SEAT'],
       response: 'GOOD',
       sideEffect: (roomId) => {
         let things = useGameStore.getState().things
@@ -81,7 +81,7 @@ export const ROOM_KNOWLEDGE: Record<string, QAEntry[]> = {
       },
     },
     {
-      phrases: ['TABLE'],
+      phrases: ['TABLE', 'DESK'],
       response: 'GOOD',
       sideEffect: (roomId) => {
         let things = useGameStore.getState().things
