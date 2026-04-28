@@ -38,13 +38,13 @@ function startDrone() {
     osc.frequency.value = freq
 
     const gain = ctx.createGain()
-    gain.gain.value = 0.08
+    gain.gain.value = 0.03
 
     // slow tremolo
     const lfo = ctx.createOscillator()
-    lfo.frequency.value = 0.07 + Math.random() * 0.05
+    lfo.frequency.value = 0.07 + Math.random() * 0.02
     const lfoGain = ctx.createGain()
-    lfoGain.gain.value = 0.03
+    lfoGain.gain.value = 0.01
     lfo.connect(lfoGain)
     lfoGain.connect(gain.gain)
     lfo.start()
@@ -81,9 +81,10 @@ function scheduleDrops(startTime: number, endTime: number) {
     osc.stop(t + dur)
 
     // irregular rhythm: groups of slow drips with occasional fast bursts
-    const gap = Math.random() < 0.1
-      ? 0.1 + Math.random() * 0.2   // burst
-      : 0.8 + Math.random() * 2.5   // slow drip
+    const gap =
+      Math.random() < 0.1
+        ? 0.3 + Math.random() * 0.4 // burst
+        : 2.0 + Math.random() * 4.0 // slow drip
     t += gap
   }
 }
@@ -144,7 +145,7 @@ function startWind() {
   filter.Q.value = 0.4
 
   const gain = ctx.createGain()
-  gain.gain.value = 0.06
+  gain.gain.value = 0.03
 
   // slow filter sweep
   const lfo = ctx.createOscillator()
@@ -179,10 +180,10 @@ export function startAmbience() {
   startDrone()
   startWind()
   scheduleCycle()
-  targetGain = 1
+  targetGain = 0.4
   if (!musicMuted) {
     master.gain.setValueAtTime(0, ctx.currentTime)
-    master.gain.linearRampToValueAtTime(1, ctx.currentTime + 8)
+    master.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 8)
   }
 }
 
@@ -205,7 +206,8 @@ export function stopAmbience() {
 
 // --- Menu howl ---
 
-let menuHowlNodes: { source: AudioBufferSourceNode; gain: GainNode } | null = null
+let menuHowlNodes: { source: AudioBufferSourceNode; gain: GainNode } | null =
+  null
 
 export function startMenuHowl() {
   if (menuHowlNodes) return

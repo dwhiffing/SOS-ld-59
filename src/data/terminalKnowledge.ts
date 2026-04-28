@@ -13,10 +13,6 @@ const DIRECTIONS = ['north', 'south', 'east', 'west']
 function getRoomDoorIds(roomId: string) {
   return DIRECTIONS.map((d) => `${roomId}-${d}`)
 }
-function areRoomDoorsUnlocked(roomId: string) {
-  const store = useGameStore.getState()
-  return getRoomDoorIds(roomId).some((id) => store.isDoorUnlocked(id))
-}
 
 export const GENERIC_KNOWLEDGE: QAEntry[] = [
   {
@@ -38,12 +34,6 @@ export const ROOM_KNOWLEDGE: Record<string, QAEntry[]> = {
     },
   ],
   '2': [
-    {
-      phrases: ['SOS', 'DOOR', 'HELP'],
-      default: true,
-      condition: areRoomDoorsUnlocked,
-      response: ['MY NAME IS', 'QUINCY'],
-    },
     {
       phrases: ['SOS', 'DOOR', 'HELP'],
       default: true,

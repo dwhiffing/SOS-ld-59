@@ -52,7 +52,7 @@ const FF_SPEED = 15
 export const playerPos = { x: 0, y: 0, z: 0 }
 
 export const MAX_INTERACT_DIST = Math.sqrt(0.15)
-export const MAX_TERMINAL_DIST = Math.sqrt(0.04)
+export const MAX_TERMINAL_DIST = Math.sqrt(0.1)
 
 // Mobile touch state
 export const isTouchDevice =
