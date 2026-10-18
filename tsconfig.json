@@ -13,6 +13,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
+    "target": "ES2022",
     "types": ["@react-three/fiber"]
   },
   "include": [".", ".triplex/*"],

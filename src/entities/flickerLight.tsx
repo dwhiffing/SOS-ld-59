@@ -5,7 +5,6 @@ import { type Object3D, type PointLight } from 'three'
 import { Mesh } from '../shared/traits'
 import { LightSource } from '../shared/lightTraits'
 import useGameStore from '../stores/gameStore'
-import { roomHeight } from './room'
 
 function buildMorseSequence(morse: string): [boolean, number][] {
   const UNIT = 200
@@ -29,6 +28,8 @@ export function FlickerLight({
   baseDistance = 5,
   defaultOn = false,
   morseCode,
+  ceilingHeight = 1,
+  castShadow = true,
 }: {
   intensity?: number
   position?: [number, number, number]
@@ -36,6 +37,8 @@ export function FlickerLight({
   baseDistance?: number
   defaultOn?: boolean
   morseCode?: string
+  ceilingHeight?: number
+  castShadow?: boolean
 }) {
   const world = useWorld()
   const ref = useRef<Object3D | null>(null)
@@ -75,7 +78,7 @@ export function FlickerLight({
       Mesh(ref.current ?? undefined),
       LightSource({
         id: idRef.current,
-        position: [position[0], roomHeight - 0.2, position[2]],
+        position: [position[0], ceilingHeight - 0.2, position[2]],
         isActive: on,
       }),
     )
@@ -137,10 +140,10 @@ export function FlickerLight({
   })
 
   return (
-    <group ref={ref} position={[position[0], roomHeight - 0.03, position[2]]}>
+    <group ref={ref} position={[position[0], ceilingHeight - 0.03, position[2]]}>
       <pointLight
         ref={lightRef}
-        castShadow
+        castShadow={castShadow}
         receiveShadow
         distance={baseDistance}
         intensity={intensity}

@@ -1,5 +1,5 @@
 {
-  "name": "sos-ld-59",
+  "name": "blockbuster-manager",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -8,7 +8,6 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@huggingface/transformers": "^4.1.0",
     "@react-spring/three": "^10.0.3",
     "@react-three/drei": "^10.0.6",
     "@react-three/fiber": "^9.1.2",

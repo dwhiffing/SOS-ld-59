@@ -10,34 +10,10 @@ const _upVec = new Vector3(0, 1, 0)
 const _rayOrigin = new Vector3()
 const _rayDir = new Vector3()
 const _raycaster = new Raycaster()
-const _aPos = new Vector3()
-const _bPos = new Vector3()
-const _dPos = new Vector3()
-import { BITMAP_WIDTH, MORSE_DURATION } from '../../constants'
 import { Mesh, PhysicsBody } from '../../shared/traits'
 import useGameStore from '../../stores/gameStore'
 import { setMusicMuted } from '../ambience'
-import { keypadsInError } from '../keypad'
-import {
-  decodeMorse,
-  encodeResponse,
-  morse,
-  RESPONSE_PAUSE_MS,
-} from '../morseRecorder'
-import {
-  playDoorLockedClick,
-  playKeypad,
-  playMorseHi,
-  playMorseLo,
-  playRecordClear,
-  playRecordStart,
-  resumeAudioContext,
-  setSfxMuted,
-  startStatic,
-  stopStatic,
-  tickFootstep,
-} from '../sounds'
-import { queryTerminal } from '../terminalSearch'
+import { playInteract, resumeAudioContext, setSfxMuted, tickFootstep } from '../sounds'
 import { Controllable, NearestItem } from './traits'
 
 let keys = new Set<string>()
@@ -45,14 +21,14 @@ let justPressed = new Set<string>()
 let initialized = false
 
 let _lastCamAngle: Quaternion = new Quaternion()
-let _lastKeyHeld = false
-let _lastSignalVal = 0
-const AUTO_SUBMIT_MS = 3000
-const FF_SPEED = 15
 export const playerPos = { x: 0, y: 0, z: 0 }
 
-export const MAX_INTERACT_DIST = Math.sqrt(0.15)
-export const MAX_TERMINAL_DIST = Math.sqrt(0.1)
+// Max distance (from the camera, along the look ray) to interact with something
+export const INTERACT_REACH = 0.55
+
+// Object names that can be looked at and interacted with. Each such object
+// carries a human readable `userData.label`.
+export const INTERACTABLE_NAMES = ['tape', 'shelf', 'counter', 'dropBin']
 
 // Mobile touch state
 export const isTouchDevice =
@@ -89,12 +65,8 @@ function initTouchListeners() {
         touchStartY = touch.clientY
         touchDragging = false
 
-        // Double tap + hold → move forward (disabled during morse)
-        if (
-          now - lastTapEndTime < DOUBLE_TAP_MS &&
-          morse.phase !== 'recording' &&
-          morse.phase !== 'responding'
-        ) {
+        // Double tap + hold → move forward
+        if (now - lastTapEndTime < DOUBLE_TAP_MS) {
           doubleTapHeld = true
           touchMoveForward = true
           continue
@@ -224,50 +196,6 @@ export const controllerInputSystem = (world: World, _delta: number) => {
 
   const now = performance.now()
 
-  if (morse.phase === 'recording') {
-    // Cancel if player walks away from the terminal (not just looks away)
-    let terminalFound = false
-    for (const e of world.entities) {
-      const mesh = e.get(Mesh) as any
-      if (!mesh) continue
-      const objs = mesh.getObjectsByProperty?.('name', 'terminal') ?? []
-      for (const obj of objs) {
-        if (obj?.userData?.roomId !== morse.terminalRoomId) continue
-        obj.getWorldPosition(_dPos)
-        const dx = playerPos.x - _dPos.x
-        const dz = playerPos.z - _dPos.z
-        if (Math.sqrt(dx * dx + dz * dz) <= MAX_TERMINAL_DIST * 2) {
-          terminalFound = true
-        }
-      }
-    }
-    if (!terminalFound) cancelRecording(true)
-  }
-
-  updateMorseState(now)
-
-  const isActive = morse.phase === 'recording' || morse.phase === 'responding'
-  if (isActive) {
-    if (morse.phase === 'responding') startStatic()
-    if (morse.phase === 'recording') {
-      if (morse.keyHeld && !_lastKeyHeld && !morse.justStarted) playMorseHi()
-      else if (!morse.keyHeld && _lastKeyHeld) playMorseLo()
-      _lastKeyHeld = morse.keyHeld
-    } else {
-      const sig = morse.signal[morse.playhead] ?? 0
-      if (sig === 1 && _lastSignalVal === 0) playMorseHi(480)
-      else if (sig === 0 && _lastSignalVal === 1) playMorseLo()
-      _lastSignalVal = sig
-    }
-  } else {
-    stopStatic()
-    if (_lastKeyHeld || _lastSignalVal) {
-      playMorseLo()
-      _lastKeyHeld = false
-      _lastSignalVal = 0
-    }
-  }
-
   if (justPressed.has('m')) {
     useGameStore.getState().cycleSoundMode()
     const mode = useGameStore.getState().soundMode
@@ -277,23 +205,7 @@ export const controllerInputSystem = (world: World, _delta: number) => {
 
   if (justPressed.has(' ')) {
     const nearest = world.get(NearestItem) as any
-    const nearestName = nearest?.mesh?.name ?? ''
-    if (nearestName === 'keypad-btn') {
-      useKeypad(nearest)
-    } else if (nearestName === 'terminal') {
-      const newRoomId = nearest.mesh.userData.roomId ?? ''
-      const isDifferent = newRoomId !== morse.terminalRoomId
-      if (
-        morse.phase === 'idle' ||
-        (isDifferent && morse.phase !== 'recording')
-      ) {
-        morse.terminalRoomId = newRoomId
-        morse.terminalRoomName = nearest.mesh.userData.roomName ?? newRoomId
-        startRecording(now)
-      }
-    } else if (nearestName === 'door') {
-      useDoor(world, nearest)
-    }
+    if (nearest?.mesh) interact(nearest.mesh)
   }
 
   moveEntities(world, now)
@@ -301,204 +213,12 @@ export const controllerInputSystem = (world: World, _delta: number) => {
   justPressed = new Set([])
 }
 
-export function pressR() {
-  justPressed.add('r')
-}
-
 export default controllerInputSystem
 
-// --- Morse state machine ---
-
-function playheadAt(start: number, now: number, speed = 1) {
-  return Math.min(
-    Math.floor(((speed * (now - start)) / MORSE_DURATION) * BITMAP_WIDTH),
-    BITMAP_WIDTH,
-  )
-}
-
-function updateMorseState(now: number) {
-  if (morse.phase === 'recording') {
-    if (justPressed.has('r')) {
-      cancelRecording(true)
-    } else {
-      advanceRecording(now)
-    }
-  } else if (morse.phase === 'done') {
-    if (now - morse.doneTime >= RESPONSE_PAUSE_MS && morse.responseSignal) {
-      startResponse(now)
-    }
-  } else if (morse.phase === 'responding') {
-    if (justPressed.has('r')) {
-      sideEffectWithMessage()
-      cancelRecording(true)
-    } else {
-      advanceResponse(now)
-    }
-  } else if (morse.phase === 'responded') {
-    cancelRecording(false)
-  }
-}
-
-function startRecording(now: number) {
-  if (morse.phase === 'recording') return
-  playRecordStart()
-  morse.phase = 'recording'
-  morse.signal = new Uint8Array(BITMAP_WIDTH)
-  morse.playhead = 0
-  morse.startTime = now
-  morse.lastInputTime = now
-  morse.ffStart = 0
-  morse.responseSignal = null
-  morse.justStarted = true
-}
-
-function sideEffectWithMessage() {
-  if (!morse.pendingSideEffect) return
-  const before = { ...useGameStore.getState().lockedDoors }
-  morse.pendingSideEffect()
-  morse.pendingSideEffect = null
-  const after = useGameStore.getState().lockedDoors
-  const newlyUnlocked = Object.keys(after).some(
-    (k) => before[k] === true && after[k] === false,
-  )
-  if (newlyUnlocked) morse.sideEffectMessage = performance.now()
-}
-
-function cancelRecording(clearRoom = false) {
-  playRecordClear()
-  morse.phase = 'idle'
-  morse.keyHeld = false
-  morse.signal = new Uint8Array(BITMAP_WIDTH)
-  morse.playhead = 0
-  morse.startTime = 0
-  morse.ffStart = 0
-  if (clearRoom) morse.terminalRoomId = ''
-}
-
-function startResponse(now: number) {
-  morse.phase = 'responding'
-  morse.signal = morse.responseSignal!
-  morse.responseSignal = null
-  morse.playhead = 0
-  morse.startTime = now
-  morse.ffStart = 0
-  morse.ffBase = 0
-}
-
-function advanceRecording(now: number) {
-  const isHigh = keys.has(' ')
-  morse.keyHeld = isHigh
-  if (!isHigh) morse.justStarted = false
-  const signalHigh = isHigh && !morse.justStarted
-  if (signalHigh) morse.lastInputTime = now
-
-  const silent = !morse.ffStart && now - morse.lastInputTime >= AUTO_SUBMIT_MS
-  if (silent) {
-    morse.ffStart = now
-    morse.ffBase = morse.playhead
-  }
-
-  const newPlayhead = morse.ffStart
-    ? Math.min(
-        morse.ffBase +
-          Math.floor(
-            FF_SPEED * ((now - morse.ffStart) / MORSE_DURATION) * BITMAP_WIDTH,
-          ),
-        BITMAP_WIDTH,
-      )
-    : playheadAt(morse.startTime, now)
-
-  for (let x = morse.playhead; x < newPlayhead; x++) {
-    morse.signal[x] = signalHigh ? 1 : 0
-  }
-  morse.playhead = newPlayhead
-  if (newPlayhead >= BITMAP_WIDTH) {
-    morse.phase = 'done'
-    morse.doneTime = now
-    resolveResponse(morse.signal, morse.terminalRoomName, morse.terminalRoomId)
-  }
-}
-
-async function resolveResponse(
-  signal: Uint8Array,
-  roomName: string,
-  roomId: string,
-) {
-  const letters = decodeMorse(signal, signal.length)
-  const query = letters.map((l) => l.char).join('')
-  const { responses, entry } = queryTerminal(query, roomName)
-  morse.pendingSideEffect = entry?.sideEffect
-    ? () => entry.sideEffect!(roomId)
-    : null
-  morse.responseQueue = responses.slice(1)
-  morse.responseSignal = encodeResponse(responses[0])
-}
-
-function advanceResponse(now: number) {
-  const normalPlayhead = playheadAt(morse.startTime, now, 2)
-
-  if (!morse.ffStart && normalPlayhead >= morse.responseSignalEnd) {
-    morse.ffStart = now
-    morse.ffBase = normalPlayhead
-  }
-
-  const newPlayhead = morse.ffStart
-    ? Math.min(
-        morse.ffBase +
-          Math.floor(
-            FF_SPEED * ((now - morse.ffStart) / MORSE_DURATION) * BITMAP_WIDTH,
-          ),
-        BITMAP_WIDTH,
-      )
-    : normalPlayhead
-
-  if (newPlayhead !== morse.playhead) morse.playhead = newPlayhead
-  if (newPlayhead >= BITMAP_WIDTH) {
-    const next = morse.responseQueue.shift()
-    if (next) {
-      morse.signal = encodeResponse(next)
-      morse.playhead = 0
-      morse.startTime = performance.now()
-      morse.ffStart = 0
-      morse.ffBase = 0
-    } else {
-      morse.phase = 'responded'
-      sideEffectWithMessage()
-    }
-  }
-}
-
-function useKeypad(nearest: any) {
-  const id = nearest?.mesh?.userData?.keypadId
-  const digit = nearest?.mesh?.userData?.digit
-  if (!id || !digit) return
-  if (keypadsInError.has(id)) return
-  playKeypad(digit)
-  useGameStore.getState().submitKeypadDigit(id, digit)
-}
-
-function useDoor(world: World, nearest: any) {
-  const id = nearest?.mesh?.userData?.doorId
-  if (!id) return
-
-  useGameStore.getState().openDoor(id)
-  if (!useGameStore.getState().isDoorOpen(id)) {
-    playDoorLockedClick()
-    return
-  }
-  const store = useGameStore.getState()
-
-  nearest?.mesh.getWorldPosition?.(_dPos)
-  const door = world.entities
-    .flatMap((e) => e.get(Mesh)?.getObjectsByProperty?.('name', 'door'))
-    .filter((d) => d && d.userData.doorId !== nearest?.mesh.userData.doorId)
-    .sort((a, b) => {
-      a?.getWorldPosition?.(_aPos)
-      b?.getWorldPosition?.(_bPos)
-      return _aPos.distanceTo(_dPos) - _bPos.distanceTo(_dPos)
-    })[0]
-
-  if (door) store.openDoor(door.userData.doorId, true)
+// Placeholder: real tape/shelf/customer behaviour comes in later steps
+function interact(mesh: any) {
+  playInteract()
+  useGameStore.getState().interact(mesh.userData?.label ?? mesh.name)
 }
 
 function moveEntities(world: World, now: number) {
@@ -550,27 +270,21 @@ function moveEntities(world: World, now: number) {
 const computeAndSetNearest = (world: World, camera: any) => {
   let best: { entity: any; mesh: any; distance: number } | null = null
   const raycaster = getRaycaster(camera)
-  const maxDist = MAX_INTERACT_DIST
 
   for (const e of world.entities) {
     const mesh = e.get(Mesh) as any
     if (!mesh) continue
 
-    for (const name of ['terminal', 'key', 'door', 'keypad-btn']) {
-      const objs = mesh.getObjectsByProperty?.('name', name)
+    for (const name of INTERACTABLE_NAMES) {
+      const objs = mesh.getObjectsByProperty?.('name', name) ?? []
       for (const obj of objs) {
-        if (!obj) continue
-        obj.getWorldPosition(_aPos)
-        const pdx = playerPos.x - _aPos.x
-        const pdz = playerPos.z - _aPos.z
-        const distLimit = name === 'terminal' ? MAX_TERMINAL_DIST : maxDist
-        if (Math.sqrt(pdx * pdx + pdz * pdz) > distLimit) continue
+        if (!obj?.visible) continue
         const intersects = raycaster.intersectObject(obj, true)
-        if (intersects.length > 0) {
-          const dist = intersects[0].distance
-          if (best === null || dist < best.distance) {
-            best = { entity: e, mesh: obj, distance: dist }
-          }
+        if (intersects.length === 0) continue
+        const dist = intersects[0].distance
+        if (dist > INTERACT_REACH) continue
+        if (best === null || dist < best.distance) {
+          best = { entity: e, mesh: obj, distance: dist }
         }
       }
     }
@@ -586,6 +300,9 @@ const computeAndSetNearest = (world: World, camera: any) => {
     current?.mesh !== newNearest.mesh
   ) {
     world.set(NearestItem, newNearest)
+    useGameStore
+      .getState()
+      .setLookingAt(best ? (best.mesh.userData?.label ?? best.mesh.name) : null)
   }
 }
 

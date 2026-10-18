@@ -2,9 +2,10 @@ import { Physics } from '@react-three/rapier'
 import { Controller } from '../entities/controller'
 import { playerPos } from '../entities/controller/system'
 import RapierDebug from '../shared/rapierDebug'
-import { Map } from '../components/Map'
+import { Store } from './store'
 
-const spawnPos: [number, number, number] = [0.2, 0.1, 0]
+// Start just inside the entrance, looking into the store
+const spawnPos: [number, number, number] = [0.6, 0.1, -1.4]
 playerPos.x = spawnPos[0]
 playerPos.y = spawnPos[1]
 playerPos.z = spawnPos[2]
@@ -15,9 +16,9 @@ export function DebugLevel() {
       <Physics gravity={[0, -9.81, 0]}>
         <RapierDebug enabled={false} />
         <Controller position={spawnPos} />
-        <Map />
+        <Store />
       </Physics>
-      {/* <ambientLight intensity={1} /> */}
+      <ambientLight intensity={0.6} />
     </>
   )
 }
